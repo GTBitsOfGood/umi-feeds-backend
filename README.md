@@ -17,7 +17,7 @@ Backend server for the [Umi Feeds app](https://github.com/GTBitsOfGood/umi-feeds
 
 ## Code/PR Workflow
 
-- Assign an issue to yourself and move it to the "In Progress" pipeline. You will have to use ZenHub, either through the [Chrome extension](https://chrome.google.com/webstore/detail/zenhub-for-github/ogcgkffhplmphkaahpmffcafajaocjbd) or through their [web-app](https://app.zenhub.com/), to do this. **Pro-tip**: ZenHub will let you filter issues by labels and milestones. Depending on your sub-team, you may want to filter by the "CORE", "DMS" or "VMS" labels and select the current sprint under milestones.
+- Assign an issue to yourself and move it to the "In Progress" pipeline. You will have to use ZenHub, either through the [Chrome or Firefox extension](https://www.zenhub.com/extension) or through their [web-app](https://app.zenhub.com/), to do this. **Pro-tip**: ZenHub will let you filter issues by labels and milestones. Depending on your sub-team, you may want to filter by the "CORE", "DMS" or "VMS" labels and select the current sprint under milestones.
 - Create a new branch in the format `[NAME]/[ISSUE-NUMBER]-[SHORT_DESCRIPTION]` (issue number is optional) by running `git checkout -b [BRANCH NAME]`.
   - example branch name: `daniel/48-setup-ci`
 - Be sure to lint, format, and type-check your code occasionally to catch errors by running `npm lint`. Reach out to an EM if you are having problems with the type-checker or are blocked by anything else in general.

@@ -30,7 +30,7 @@ export interface AuthToken {
     kind: string;
 }
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<UserDocument>({
     email: { type: String, unique: true },
     password: String,
     passwordResetToken: String,
