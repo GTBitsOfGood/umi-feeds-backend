@@ -6,19 +6,16 @@ Backend server for the [Umi Feeds app](https://github.com/GTBitsOfGood/umi-feeds
 
 - Clone this repository to your computer.
 - Follow the instructions [here](https://www.notion.so/gtbitsofgood/Getting-Started-56106473076a47eaa8c863741becbf34) to install Git, Node.js (v12.X LTS at least) and the MongoDB Community Server.
-- Create a MongoDB database, perhaps on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Remember to whitelist your connection IP address. Copy `.env.example` into a new `.env` file and replace the MongoDB <password> in `MONGODB_URI` with your actual one.
 - Navigate to this project in the terminal and run `npm install`.
-- Run `npm secrets` to sync development secrets from Bitwarden and save them to `.env.local` file locally. Contact a leadership member for the Bitwarden password.
-  - **Note**: If you are using the Windows command prompt, enter `npm secrets:login` and then `npm secrets:sync`.
+- Run `npm run secrets` to sync development secrets from Bitwarden and save them to `.env.local` file locally. Contact a leadership member for the Bitwarden password.
+  - **Note**: If you are using the Windows command prompt, enter `npm run secrets:login` and then `npm run secrets:sync`.
 - Start your local MongoDB server by running `mongod` (this command will work if you created aliases as recommended in [this](https://zellwk.com/blog/install-mongodb/) article).
-- Next, perform migrations on your local database: `npm db:migrate up`. You should run this command whenever a new migration is added to the codebase; you can run `npm db:migrate status` to check if your local database is up to date.
 - Run the dev version of this project by entering `npm start`.
-- In production, if you end up using cookies, you should change the `SESSION_SECRET` environment variable.
 
 ## Code/PR Workflow
 
 - Assign an issue to yourself and move it to the "In Progress" pipeline. You will have to use ZenHub, either through the [Chrome or Firefox extension](https://www.zenhub.com/extension) or through their [web-app](https://app.zenhub.com/), to do this. **Pro-tip**: ZenHub will let you filter issues by labels and milestones. Depending on your sub-team, you may want to filter by the "CORE", "DMS" or "VMS" labels and select the current sprint under milestones.
-- Create a new branch in the format `[NAME]/[ISSUE-NUMBER]-[SHORT_DESCRIPTION]` (issue number is optional) by running `git checkout -b [BRANCH NAME]`.
+- Create a new branch in the format `[NAME]/[ISSUE-NUMBER]-[SHORT-DESCRIPTION]` (issue number is optional) by running `git checkout -b [BRANCH NAME]`.
   - example branch name: `daniel/48-setup-ci`
 - Be sure to lint, format, and type-check your code occasionally to catch errors by running `npm lint`. Reach out to an EM if you are having problems with the type-checker or are blocked by anything else in general.
 - Commit changes and then push your branch by running `git push -u origin [BRANCH NAME]`.
@@ -34,10 +31,6 @@ TypeScript will help you catch bugs early at compile-time and save you significa
 To fully utilize the power of TypeScript, you will have to [learn its type system](https://learnxinyminutes.com/docs/typescript/). Use [this](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/blob/master/README.md#section-2-getting-started) as a cheat sheet for using TypeScript with React.
 
 While you are encouraged to use TypeScript, you **don't** have to. Our codebase can be a mix of both TypeScript and JavaScript.
-
-## Migrations
-
-TODO: Add a note about migrations, why we are using them, and how to create and run them.
 
 ## License
 
