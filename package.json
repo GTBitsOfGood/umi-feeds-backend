@@ -26,10 +26,10 @@
         "run:ts-node:script": "cross-env ts-node -O {\\\"module\\\":\\\"commonjs\\\"} -r module-alias/register",
         "lint:tsc": "tsc --noEmit",
         "lint:eslint": "eslint \"./**/*.{tsx,ts,js,jsx}\" --fix --cache",
-        "secrets": "npm secrets:logout && cross-env-shell BW_SESSION=`bw login product@bitsofgood.org --raw` \"yarn secrets:sync\"",
+        "secrets": "npm run secrets:logout && cross-env-shell BW_SESSION=`bw login product@bitsofgood.org --raw` \"npm run secrets:sync\"",
         "secrets:logout": "(bw logout || exit 0)",
         "secrets:login": "bw login product@bitsofgood.org",
-        "secrets:sync": "bw sync && bw get item gen-soln/.env.local | fx .notes > \".env.local\""
+        "secrets:sync": "bw sync && bw get item Umi-Feeds/development/backend/.env | fx .notes > \".env\""
     },
     "dependencies": {
         "async": "^3.2.0",
@@ -56,9 +56,9 @@
         "winston": "^3.3.3"
     },
     "devDependencies": {
+        "@bitwarden/cli": "^1.14.0",
         "@types/async": "^3.2.5",
         "@types/bcrypt-nodejs": "^0.0.30",
-        "@bitwarden/cli": "^1.14.0",
         "@types/bluebird": "^3.5.33",
         "@types/body-parser": "^1.19.0",
         "@types/chai": "^4.2.14",
@@ -91,6 +91,7 @@
         "chai": "^4.3.0",
         "concurrently": "^5.3.0",
         "eslint": "^6.8.0",
+        "fx": "^20.0.2",
         "jest": "^26.6.3",
         "node-sass": "^4.14.1",
         "nodemon": "^2.0.7",
