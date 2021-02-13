@@ -61,5 +61,9 @@ app.use(
  * API examples routes.
  */
 app.get('/api', apiController.getApi);
+app.get('/api/getDonors', apiController.getDonors)
+app.post('/api/postDonors', apiController.postDonors)
+app.get('/api/getDonations', apiController.getDonations)
+app.post('/api/postDonations', apiController.postDonations)
 
 export default app;
