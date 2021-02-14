@@ -10,6 +10,8 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 import bluebird from 'bluebird';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
+import jwt from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
 
 const MongoStore = mongo(session);
 
@@ -57,9 +59,27 @@ app.use(
     express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
 
+
+const checkJwt = jwt({
+    // Dynamically provide a signing key
+    secret: jwksRsa.expressJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: 'https://bog-dev.us.auth0.com/.well-known/jwks.json'
+    }),
+
+    // validate the audience and the issuer
+    audience: process.env.AUTH0_AUDIENCE,
+    issuer: 'https://bog-dev.us.auth0.com/',
+    algorithms: ['RS256']
+});
+
 /**
  * API examples routes.
  */
+
 app.get('/api', apiController.getApi);
+app.post('/test', checkJwt, apiController.test);
 
 export default app;
