@@ -21,6 +21,7 @@ coverage
 
 # API keys and secrets
 .env
+src/umifeeds-1581f-firebase-adminsdk-w777l-eb77e3745f.json
 
 # Dependency directory
 node_modules

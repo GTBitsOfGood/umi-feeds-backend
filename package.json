@@ -29,7 +29,7 @@
         "secrets": "npm run secrets:logout && cross-env-shell BW_SESSION=`bw login product@bitsofgood.org --raw` \"npm run secrets:sync\"",
         "secrets:logout": "(bw logout || exit 0)",
         "secrets:login": "bw login product@bitsofgood.org",
-        "secrets:sync": "bw sync && bw get item Umi-Feeds/development/backend/.env | fx .notes > \".env\""
+        "secrets:sync": "bw sync && bw get item Umi-Feeds/development/backend/.env | fx .notes > \".env\" && bw get item umifeeds-1581f-firebase-adminsdk-w777l-eb77e3745f.json | fx .notes > \"src/umifeeds-1581f-firebase-adminsdk-w777l-eb77e3745f.json\""
     },
     "dependencies": {
         "async": "^3.2.0",
@@ -38,6 +38,7 @@
         "body-parser": "^1.19.0",
         "compression": "^1.7.4",
         "connect-mongo": "^3.2.0",
+        "cross-env": "^7.0.3",
         "dotenv": "^8.2.0",
         "errorhandler": "^1.5.1",
         "express": "^4.17.1",
@@ -45,6 +46,7 @@
         "express-session": "^1.17.1",
         "express-validator": "^6.9.2",
         "fbgraph": "^1.4.4",
+        "firebase-admin": "^9.5.0",
         "lodash": "^4.17.20",
         "lusca": "^1.6.1",
         "mongoose": "^5.11.15",

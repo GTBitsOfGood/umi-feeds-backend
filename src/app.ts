@@ -9,6 +9,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import bluebird from 'bluebird';
+import * as admin from 'firebase-admin';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 
 const MongoStore = mongo(session);
@@ -28,6 +29,12 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUni
 ).catch(err => {
     console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
     // process.exit();
+});
+
+// Connect to Firebase
+admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: 'https://umifeeds.firebaseio.com'
 });
 
 // Express configuration
@@ -61,5 +68,23 @@ app.use(
  * API examples routes.
  */
 app.get('/api', apiController.getApi);
+
+app.get('/testpush', function(req, res) {
+    res.send("test push endpoint");
+    const message = {
+        notification: {
+            title: "New Message",
+            body: "This new message is just a test",
+        },
+        token: "TOKEN GOES HERE",
+    }
+
+    admin.messaging().send(message)
+    .then((response) => {
+        console.log("Successfully sent message: ", response);
+    }).catch((error) => {
+        console.log("Error sending message: ", error);
+    });
+})
 
 export default app;
