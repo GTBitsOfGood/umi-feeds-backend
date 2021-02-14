@@ -70,21 +70,21 @@ app.use(
 app.get('/api', apiController.getApi);
 
 app.get('/testpush', function(req, res) {
-    res.send("test push endpoint");
+    res.send('test push endpoint');
     const message = {
         notification: {
-            title: "New Message",
-            body: "This new message is just a test",
+            title: 'New Message',
+            body: 'This new message is just a test',
         },
-        token: "TOKEN GOES HERE",
-    }
+        token: 'TOKEN GOES HERE',
+    };
 
     admin.messaging().send(message)
     .then((response) => {
-        console.log("Successfully sent message: ", response);
+        console.log('Successfully sent message: ', response);
     }).catch((error) => {
-        console.log("Error sending message: ", error);
+        console.log('Error sending message: ', error);
     });
-})
+});
 
 export default app;
