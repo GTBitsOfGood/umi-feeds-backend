@@ -1,7 +1,7 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
 import { DonorDocument } from './Donor'
 
-export type DonationsDocument = Document & {
+export interface DonationDocument extends Document {
     donor: DonorDocument['_id'];
     availability: {
         startTime: Date,
@@ -16,10 +16,10 @@ export type DonationsDocument = Document & {
     descriptionImages: string[];
     pickupInstructions?: string;
     weight?: number;
-    foodImages: string;
+    foodImages: string[];
 }
 
-const donationsSchema = new Schema<DonationsDocument>({
+const donationSchema = new Schema<DonationDocument>({
     donor: {
         type: Schema.Types.ObjectId,
         required: true
@@ -43,10 +43,10 @@ const donationsSchema = new Schema<DonationsDocument>({
     pickupInstructions: String,
     weight: Number,
     foodImages: {
-        type: String,
-        default: []
+        type: [String],
+        default: [],
     }
 });
 
-export const Donations: Model<DonationsDocument> = mongoose.model<DonationsDocument>('Donation', donationsSchema);
+export const Donation: Model<DonationDocument> = mongoose.model<DonationDocument>('Donation', donationSchema);
 

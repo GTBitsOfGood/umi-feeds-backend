@@ -1,6 +1,6 @@
 import mongoose, {Schema, Document} from 'mongoose';
 
-export type DonorDocument = Document & {
+export interface DonorDocument extends Document {
     name: string;
     longitude: number;
     latitude: number;
