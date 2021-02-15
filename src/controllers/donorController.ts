@@ -82,10 +82,9 @@ export const postDonations = (req: Request, res: Response) => {
  */
 
 export const availPickup = (req: Request, res: Response) => {
-    const currentDate = new Date();
     Donation.find({ 
-        'availability.startTime' : { '$lte' : currentDate },  
-        'availability.endTime' : { '$gte' : currentDate }
+        'availability.startTime' : { '$lte' : new Date() },  
+        'availability.endTime' : { '$gte' : new Date() }
     })
     .then(result => {
         return res.status(200).json({

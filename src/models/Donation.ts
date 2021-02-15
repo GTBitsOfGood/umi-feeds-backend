@@ -45,8 +45,8 @@ const donationSchema = new Schema<DonationDocument>({
     foodImages: {
         type: [String],
         default: [],
-    }
-});
+    }, 
+}, { timestamps: true });
 
 export const Donation: Model<DonationDocument> = mongoose.model<DonationDocument>('Donation', donationSchema);
 
