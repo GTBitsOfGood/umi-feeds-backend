@@ -32,6 +32,9 @@
         "secrets:sync": "bw sync && bw get item Umi-Feeds/development/backend/.env | fx .notes > \".env\""
     },
     "dependencies": {
+        "@azure/arm-storage": "^15.1.0",
+        "@azure/ms-rest-nodeauth": "^3.0.6",
+        "@azure/storage-blob": "^12.2.1",
         "async": "^3.2.0",
         "bcrypt-nodejs": "^0.0.3",
         "bluebird": "^3.7.2",
