@@ -11,13 +11,13 @@ export const getDonors = (req: Request, res: Response) => {
     .then(results => {
         return res.status(200).json({
             donors: results,
-        })
+        });
     })
     .catch(error => {
         return res.status(500).json({
             message: error.message
-        })
-    })
+        });
+    });
 };
 
 /**
@@ -30,13 +30,13 @@ export const postDonors = (req: Request, res: Response) => {
     .then(result => {
         return res.status(201).json({
             donor: result
-        })
+        });
     })
     .catch(error => {
         return res.status(500).json({
             message: error.message
-        })
-    })
+        });
+    });
 };
 
 /**
@@ -48,13 +48,13 @@ export const getDonations = (req: Request, res: Response) => {
     .then(results => {
         return res.status(200).json({
             donations: results,
-        })
+        });
     })
     .catch(error => {
         return res.status(500).json({
             message: error.message
-        })
-    })
+        });
+    });
 };
 
 /**
@@ -67,12 +67,35 @@ export const postDonations = (req: Request, res: Response) => {
     .then(result => {
         return res.status(201).json({
             donation: result
-        })
+        });
     })
     .catch(error => {
         return res.status(500).json({
             message: error.message
-        })
+        });
+    });
+};
+
+/**
+ * Query Donations available to pickup
+ * @route GET /available-pickup
+ */
+
+export const availPickup = (req: Request, res: Response) => {
+    const currentDate = new Date();
+    Donation.find({ 
+        'availability.startTime' : { '$lte' : currentDate },  
+        'availability.endTime' : { '$gte' : currentDate }
     })
+    .then(result => {
+        return res.status(200).json({
+            donation: result
+        });
+    })
+    .catch(error => {
+        return res.status(500).json({
+            message: error.message
+        });
+    });
 };
 

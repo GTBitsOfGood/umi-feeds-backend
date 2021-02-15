@@ -1,15 +1,15 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { DonorDocument } from './Donor'
+import { DonorDocument } from './Donor';
 
 export interface DonationDocument extends Document {
     donor: DonorDocument['_id'];
     availability: {
-        startTime: Date,
-        endTime: Date
+        startTime: Date;
+        endTime: Date;
     };
     pickup?: {
-        pickupTime: Date,
-        dropoffTime: Date,
+        pickupTime: Date;
+        dropoffTime: Date;
         // volunteer: Volunteer
     };
     description: string;

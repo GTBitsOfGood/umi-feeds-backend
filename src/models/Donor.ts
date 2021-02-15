@@ -19,7 +19,7 @@ const donorSchema = new Schema<DonorDocument>({
         type: String,
         required: true
     },
-},{ timestamps: true })
+},{ timestamps: true });
 
 export const Donor = mongoose.model<DonorDocument>('Donor', donorSchema);
     
