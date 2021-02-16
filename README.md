@@ -5,19 +5,20 @@ Backend server for the [Umi Feeds app](https://github.com/GTBitsOfGood/umi-feeds
 ## Setup
 
 - Clone this repository to your computer.
-- Follow the instructions [here](https://www.notion.so/gtbitsofgood/Getting-Started-56106473076a47eaa8c863741becbf34) to install Git, Node.js (v12.X LTS at least) and the MongoDB Community Server.
+- Follow the instructions [here](https://www.notion.so/gtbitsofgood/Getting-Started-56106473076a47eaa8c863741becbf34) to install Git, Node.js (v12.X LTS at least).
+  - I recommend also installing MongoDB Compass so you can view the database from MongoDB Atlas, but you can also use the MongoDB Atlas website for that (see Bitwarden for the MongoDB Atlas website credentials).
 - Navigate to this project in the terminal and run `npm install`.
 - Run `npm run secrets` to sync development secrets from Bitwarden and save them to `.env.local` file locally. Contact a leadership member for the Bitwarden password.
   - **Note**: If you are using the Windows command prompt, enter `npm run secrets:login` and then `npm run secrets:sync`.
-- Start your local MongoDB server by running `mongod` (this command will work if you created aliases as recommended in [this](https://zellwk.com/blog/install-mongodb/) article).
 - Run the dev version of this project by entering `npm start`.
+- By default, the Express server will use the cloud MongoDB server on MongoDB Atlas as the database. If you want to use a local MongoDB instance hosted by your computer, install MongoDB Community Server, and then start your local MongoDB server by running `mongod` (this command will work if you created aliases as recommended in [this](https://zellwk.com/blog/install-mongodb/) article). Edit your local .env file (not on Bitwarden) to use your local MongoDB database URI.
 
 ## Code/PR Workflow
 
 - Assign an issue to yourself and move it to the "In Progress" pipeline. You will have to use ZenHub, either through the [Chrome or Firefox extension](https://www.zenhub.com/extension) or through their [web-app](https://app.zenhub.com/), to do this. **Pro-tip**: ZenHub will let you filter issues by labels and milestones. Depending on your sub-team, you may want to filter by the "CORE", "DMS" or "VMS" labels and select the current sprint under milestones.
 - Create a new branch in the format `[NAME]/[ISSUE-NUMBER]-[SHORT-DESCRIPTION]` (issue number is optional) by running `git checkout -b [BRANCH NAME]`.
   - example branch name: `daniel/48-setup-ci`
-- Be sure to lint, format, and type-check your code occasionally to catch errors by running `npm lint`. Reach out to an EM if you are having problems with the type-checker or are blocked by anything else in general.
+- Be sure to lint, format, and type-check your code occasionally to catch errors by running `npm run lint`. Reach out to an EM if you are having problems with the type-checker or are blocked by anything else in general.
 - Commit changes and then push your branch by running `git push -u origin [BRANCH NAME]`.
 - Create a pull request (PR) on GitHub to merge your branch into `develop`.
 - In your PR, briefly describe the changes, link the PR to its corresponding issue, and request a Senior Developer or EM as a reviewer.
@@ -34,7 +35,7 @@ While you are encouraged to use TypeScript, you **don't** have to. Our codebase 
 
 ## License
 
-This project is licensed under the GPL v3. It is based on the starter template [microsoft/TypeScript-Node-Starter](https://github.com/microsoft/TypeScript-Node-Starter/), which has the following license:
+This project is open source and is licensed under the GPL v3. It is based on the starter template [microsoft/TypeScript-Node-Starter](https://github.com/microsoft/TypeScript-Node-Starter/), which has the following license:
 
     MIT License
 
