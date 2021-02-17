@@ -15,6 +15,7 @@ const MongoStore = mongo(session);
 
 // Controllers (route handlers)
 import * as apiController from './controllers/api';
+import * as imageController from './controllers/image-upload';
 
 // Create Express server
 const app = express();
@@ -61,5 +62,7 @@ app.use(
  * API examples routes.
  */
 app.get('/api', apiController.getApi);
+
+app.post('/api', imageController.postImage);
 
 export default app;
