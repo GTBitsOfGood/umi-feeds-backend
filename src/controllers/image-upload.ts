@@ -68,7 +68,7 @@ export const postImage = (req: Request, res: Response) => {
                 message: 'No file uploaded'
             });
         } else {
-            const image = req.files.image;
+            // const image = req.files.image;
             // uploadFileToBlob(image);
         }
     } catch (err) {
