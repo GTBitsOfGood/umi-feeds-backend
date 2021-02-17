@@ -8,8 +8,8 @@ Backend server for the [Umi Feeds app](https://github.com/GTBitsOfGood/umi-feeds
 - Follow the instructions [here](https://www.notion.so/gtbitsofgood/Getting-Started-56106473076a47eaa8c863741becbf34) to install Git, Node.js (v12.X LTS at least).
   - I recommend also installing MongoDB Compass so you can view the database from MongoDB Atlas, but you can also use the MongoDB Atlas website for that (see Bitwarden for the MongoDB Atlas website credentials).
 - Navigate to this project in the terminal and run `npm install`.
-- Run `npm run secrets` to sync development secrets from Bitwarden and save them to `.env.local` file locally. Contact a leadership member for the Bitwarden password.
-  - **Note**: If you are using the Windows command prompt, enter `npm run secrets:login` and then `npm run secrets:sync`.
+- On Linux, run `npm run secrets` to download development secrets from Bitwarden and save them to the `.env` file locally. Contact a leadership member for the Bitwarden password.
+  - **Note**: If you are using the Windows command prompt or a Mac, enter `npm run secrets:login` (logging in only needs to be done once) and then `npm run secrets:sync`. You may have to enter the Bitwarden password multiple times. You should re-run this whenever the secrets in Bitwarden changes.
 - Run the dev version of this project by entering `npm start`.
 - By default, the Express server will use the cloud MongoDB server on MongoDB Atlas as the database. If you want to use a local MongoDB instance hosted by your computer, install MongoDB Community Server, and then start your local MongoDB server by running `mongod` (this command will work if you created aliases as recommended in [this](https://zellwk.com/blog/install-mongodb/) article). Edit your local .env file (not on Bitwarden) to use your local MongoDB database URI.
 
