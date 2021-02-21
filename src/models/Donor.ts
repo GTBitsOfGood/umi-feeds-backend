@@ -12,14 +12,22 @@ const donorSchema = new Schema<DonorDocument>({
         required: true
     },
     longitude: {
-        type: String,
+        type: Number,
         required: true
     },
     latitude: {
+        type: Number,
+        required: true
+    },
+    phoneNumber: {
         type: String,
         required: true
     },
-},{ timestamps: true });
+    address: {
+        type: String,
+        required: true
+    }
+}, { timestamps: true });
 
 export const Donor = mongoose.model<DonorDocument>('Donor', donorSchema);
     

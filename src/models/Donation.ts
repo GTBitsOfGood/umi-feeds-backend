@@ -25,8 +25,17 @@ const donationSchema = new Schema<DonationDocument>({
         required: true
     },
     availability: {
-        startTime: Date,
-        endTime: Date
+        type: new Schema({
+            startTime: { 
+                type: Date,
+                required: true
+            },
+            endTime: {
+                type: Date,
+                required: true
+            }
+        }),
+        required: true
     },
     pickup: {
         pickupTime: Date,
