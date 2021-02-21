@@ -57,17 +57,13 @@ app.use(
     express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
 
-// Sub Routers
-import donorRouter from './routes/donors';
-app.use('/api', donorRouter);
-
-
 /**
  * API examples routes.
  */
 app.get('/api', apiController.getApi);
 
-import donations from './routes/donations';
-app.use('/api', donations);
+// Sub Routers
+import donorRouter from './routes/donors';
+app.use('/api', donorRouter);
 
 export default app;
