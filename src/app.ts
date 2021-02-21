@@ -62,4 +62,7 @@ app.use(
  */
 app.get('/api', apiController.getApi);
 
+import donations from './routes/donations';
+app.use('/api', donations);
+
 export default app;
