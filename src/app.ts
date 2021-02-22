@@ -60,6 +60,11 @@ app.use(
 const fileupload = require('express-fileupload');
 app.use(fileupload());
 
+// Sub Routers
+import donorRouter from './routes/donors';
+app.use('/api', donorRouter);
+
+
 /**
  * API examples routes.
  */
