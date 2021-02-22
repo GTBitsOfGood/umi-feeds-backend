@@ -57,12 +57,24 @@ app.use((req, res, next) => {
 app.use(
     express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
+const fileupload = require('express-fileupload');
+app.use(fileupload());
 
 /**
  * API examples routes.
  */
 app.get('/api', apiController.getApi);
 
-app.post('/api', imageController.postImage);
+app.post('/upload', function(req, res) {
+    if(!req.files) {
+        res.send({
+            status: false,
+            message: 'No file uploaded check 1.',
+            sentReq: String(req.files)
+        });
+    } else {
+        imageController.postImage(req, res);
+    }
+});
 
 export default app;

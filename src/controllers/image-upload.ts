@@ -26,19 +26,19 @@ const getBlobsInContainer = async (containerClient: ContainerClient) => {
   return returnedBlobUrls;
 };
 
-const createBlobInContainer = async (containerClient: ContainerClient, file: UploadedFile) => {
+const createBlobInContainer = async (containerClient: ContainerClient, file: File) => {
   
   // create blobClient for container
   const blobClient = containerClient.getBlockBlobClient(file.name);
 
   // set mimetype as determined from browser with file upload control
-  const options = { blobHTTPHeaders: { blobContentType: file.encoding } };
+  const options = { blobHTTPHeaders: { blobContentType: file.type } };
 
   // upload file
-  await blobClient.uploadBrowserData(file.data, options);
+  await blobClient.uploadBrowserData(file, options);
 };
 
-export const uploadFileToBlob = async (file: UploadedFile | null): Promise<string[]> => {
+export const uploadFileToBlob = async (file: File | null): Promise<string[]> => {
   if (!file) return [];
 
   // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
@@ -61,17 +61,33 @@ export const uploadFileToBlob = async (file: UploadedFile | null): Promise<strin
 
 // export default uploadFileToBlob;
 
+function toArrayBuffer(buffer: Buffer) {
+  const ab = new ArrayBuffer(buffer.length);
+  const view = new Uint8Array(ab);
+  for (let i = 0; i < buffer.length; ++i) {
+      view[i] = buffer[i];
+  }
+  return ab;
+}
+
 export const postImage = (req: Request, res: Response) => {
     try {
         if(!req.files) {
             res.send({
                 status: false,
-                message: 'No file uploaded'
+                message: 'No file uploaded',
+                // sentReq: String(req.files)
             });
         } else {
-            const imgRequest = req.files.image as UploadedFile;
-            // const image: File = new File(imgRequest.data, imgRequest.name, {type: "text/plain", lastModified: date});
-            uploadFileToBlob(imgRequest);
+          const imgRequest = req.files.image as UploadedFile;
+          // const image: File = new File(imgRequest.data, imgRequest.name, {type: "text/plain", lastModified: date});
+          const file: File = new File([toArrayBuffer(imgRequest.data)], imgRequest.name,{type: imgRequest.mimetype});
+          uploadFileToBlob(file);
+          res.send({
+            status: false,
+            message: 'File uploaded!',
+            // sentReq: String(req.files)
+          });
         }
     } catch (err) {
         res.status(500).send(err);
