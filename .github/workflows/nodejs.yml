@@ -29,7 +29,7 @@ jobs:
         env:
           CI: true
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     needs: build-node
     runs-on: ubuntu-latest
     steps:
