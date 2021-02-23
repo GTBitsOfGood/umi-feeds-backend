@@ -1,7 +1,7 @@
 'use strict';
 
-import express, { Response, Request, NextFunction } from 'express';
-import { User } from '../models/User';
+import { Response, Request } from 'express';
+
 
 /**
  * List of API examples.

@@ -15,7 +15,7 @@ const MongoStore = mongo(session);
 
 // Controllers (route handlers)
 import * as apiController from './controllers/api';
-import * as imageController from './controllers/image-upload';
+import * as imageController from './controllers/imageUpload';
 
 // Create Express server
 const app = express();
@@ -70,16 +70,6 @@ app.use('/api', donorRouter);
  */
 app.get('/api', apiController.getApi);
 
-app.post('/upload', function(req, res) {
-    if(!req.files) {
-        res.send({
-            status: false,
-            message: 'No file uploaded check 1.',
-            sentReq: String(req.files)
-        });
-    } else {
-        imageController.postImage(req, res);
-    }
-});
+app.post('/upload', imageController.postImage);
 
 export default app;
