@@ -15,7 +15,7 @@ const MongoStore = mongo(session);
 
 // Controllers (route handlers)
 import * as apiController from './controllers/api';
-import * as imageController from './controllers/image-upload';
+import * as imageController from './controllers/imageUpload';
 
 // Create Express server
 const app = express();
@@ -69,7 +69,7 @@ app.post('/upload', function(req, res) {
     if(!req.files) {
         res.send({
             status: false,
-            message: 'No file uploaded check 1.',
+            message: 'No file uploaded.',
             sentReq: String(req.files)
         });
     } else {
