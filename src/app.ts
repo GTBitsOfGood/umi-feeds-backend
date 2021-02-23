@@ -12,6 +12,7 @@ import bluebird from 'bluebird';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
+import jwtAuthz from 'express-jwt-authz';
 
 const MongoStore = mongo(session);
 
@@ -79,7 +80,8 @@ const checkJwt = jwt({
  * API examples routes.
  */
 
-app.get('/api', apiController.getApi);
-app.post('/test', checkJwt, apiController.test);
+//app.get('/api', apiController.getApi);
+app.get('/test', checkJwt, jwtAuthz(['read:test']), apiController.test);
 
 export default app;
+

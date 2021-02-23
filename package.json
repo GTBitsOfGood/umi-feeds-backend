@@ -43,6 +43,7 @@
         "express": "^4.17.1",
         "express-flash": "0.0.2",
         "express-jwt": "^6.0.0",
+        "express-jwt-authz": "^2.4.1",
         "express-session": "^1.17.1",
         "express-validator": "^6.9.2",
         "fbgraph": "^1.4.4",
