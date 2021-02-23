@@ -1,7 +1,6 @@
 'use strict';
 
-import { Response, Request, NextFunction } from 'express';
-import { UserDocument } from '../models/User';
+import { Response, Request } from 'express';
 
 
 /**

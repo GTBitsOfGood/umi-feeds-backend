@@ -16,7 +16,6 @@ export const postImage = (req: Request, res: Response) => {
 
           const storage = require('azure-storage');
           const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-
         
           blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, function(err: string) {
             if (err)
