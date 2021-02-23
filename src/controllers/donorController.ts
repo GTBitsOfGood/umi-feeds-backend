@@ -77,6 +77,29 @@ export const postDonations = (req: Request, res: Response) => {
 };
 
 /**
+ * Upload Images for Donations
+ * @route PUT /donations/images
+ */
+
+ export const uploadImageDonations = (req: Request, res: Response) => {
+     // Upload Image code
+     const id = req.body.id;
+     Donation.updateOne({_id: id}, {
+         descriptionImages: [],
+         foodImages: []
+     }).then(result => {
+         res.status(200).json({
+             donation: result
+         })
+     }).catch(error => {
+         res.status(500).json({
+             message: error.message
+         })
+     })
+ }
+
+
+/**
  * Query Donations available to pickup
  * @route GET /available-pickup
  */
@@ -97,4 +120,5 @@ export const availPickup = (req: Request, res: Response) => {
         });
     });
 };
+
 
