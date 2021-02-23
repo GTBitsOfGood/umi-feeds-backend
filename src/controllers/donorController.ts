@@ -98,3 +98,16 @@ export const availPickup = (req: Request, res: Response) => {
     });
 };
 
+/**
+ * Deletes Donations
+ * @route DELETE /donations/:donation_id
+ */
+export const deleteDonation = (req: Request, res: Response) => {
+    const id = req.params.donation_id;
+    return Donation.findByIdAndDelete(id)
+        .then(result => res.status(200).json({ success: true, deleted: result }))
+        .catch((error: Error) => 
+            res.status(400).json({ success: false, message: error.message })
+        );
+};
+  
