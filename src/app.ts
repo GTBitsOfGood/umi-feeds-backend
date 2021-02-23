@@ -65,16 +65,6 @@ app.use(fileupload());
  */
 app.get('/api', apiController.getApi);
 
-app.post('/upload', function(req, res) {
-    if(!req.files) {
-        res.send({
-            status: false,
-            message: 'No file uploaded.',
-            sentReq: String(req.files)
-        });
-    } else {
-        imageController.postImage(req, res);
-    }
-});
+app.post('/upload', imageController.postImage);
 
 export default app;
