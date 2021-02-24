@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 import bluebird from 'bluebird';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
+import {sendBatchNotification} from './util/notifications';
 
 const MongoStore = mongo(session);
 
@@ -61,6 +62,11 @@ app.use(fileupload());
 
 // Routes
 app.post('/upload', imageController.postImage);
+app.get('/testpush', function(req, res) {
+    res.send('testing push notification');
+    // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself
+    sendBatchNotification('Umifeeds','this is a test', ['']);
+})
 
 // Sub Routers
 import donorRouter from './routes/donors';
