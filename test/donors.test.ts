@@ -9,8 +9,7 @@ describe('GET /api/donors', () => {
 });
 
 describe('POST /api/donors with no body', () => {
-    it('should return 400 Bad Request', () => {
-        return request(app).post('/api/donors')
-            .expect(500);
+    it('should return 400 or 500', () => {
+        return request(app).post('/api/donors').expect(res => res.status in [400, 500]);
     });
 });
