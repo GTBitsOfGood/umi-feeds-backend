@@ -19,6 +19,7 @@ Backend server for the [Umi Feeds app](https://github.com/GTBitsOfGood/umi-feeds
 - Create a new branch in the format `[NAME]/[ISSUE-NUMBER]-[SHORT-DESCRIPTION]` (issue number is optional) by running `git checkout -b [BRANCH NAME]`.
   - example branch name: `daniel/48-setup-ci`
 - Be sure to lint, format, and type-check your code occasionally to catch errors by running `npm run lint`. Reach out to an EM if you are having problems with the type-checker or are blocked by anything else in general.
+- You can run the unit and integration test suite with `npm run test`.
 - Commit changes and then push your branch by running `git push -u origin [BRANCH NAME]`.
 - Create a pull request (PR) on GitHub to merge your branch into `develop`.
 - In your PR, briefly describe the changes, link the PR to its corresponding issue, and request a Senior Developer or EM as a reviewer.
