@@ -81,7 +81,7 @@ const checkJwt = jwt({
  */
 
 //app.get('/api', apiController.getApi);
-app.get('/test', checkJwt, jwtAuthz(['read:test']), apiController.test);
+app.get('/test-auth0-security', checkJwt, jwtAuthz(['read:test']), apiController.test_auth0);
 
 export default app;
 

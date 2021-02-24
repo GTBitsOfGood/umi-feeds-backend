@@ -15,6 +15,6 @@ export const getApi = (req: Request, res: Response) => {
 };
 
 
-export const test = (req: Request, res: Response) => {
+export const test_auth0 = (req: Request, res: Response) => {
     res.send("Secured");
 };
