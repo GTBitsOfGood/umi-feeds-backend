@@ -60,11 +60,12 @@ app.use(
 const fileupload = require('express-fileupload');
 app.use(fileupload());
 
-/**
- * API examples routes.
- */
+// Routes
 app.get('/api', apiController.getApi);
-
 app.post('/upload', imageController.postImage);
+
+// Sub Routers
+import donorRouter from './routes/donors';
+app.use('/api', donorRouter);
 
 export default app;
