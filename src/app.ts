@@ -15,6 +15,7 @@ const MongoStore = mongo(session);
 
 // Controllers (route handlers)
 import * as apiController from './controllers/api';
+import * as imageController from './controllers/imageUpload';
 
 // Create Express server
 const app = express();
@@ -56,11 +57,12 @@ app.use((req, res, next) => {
 app.use(
     express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
+const fileupload = require('express-fileupload');
+app.use(fileupload());
 
-/**
- * API examples routes.
- */
+// Routes
 app.get('/api', apiController.getApi);
+app.post('/upload', imageController.postImage);
 
 // Sub Routers
 import donorRouter from './routes/donors';
