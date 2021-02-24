@@ -14,7 +14,6 @@ import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 const MongoStore = mongo(session);
 
 // Controllers (route handlers)
-import * as apiController from './controllers/api';
 import * as imageController from './controllers/imageUpload';
 
 // Create Express server
@@ -61,7 +60,6 @@ const fileupload = require('express-fileupload');
 app.use(fileupload());
 
 // Routes
-app.get('/api', apiController.getApi);
 app.post('/upload', imageController.postImage);
 
 // Sub Routers
