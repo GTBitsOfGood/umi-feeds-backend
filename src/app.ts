@@ -62,4 +62,8 @@ app.use(
  */
 app.get('/api', apiController.getApi);
 
+// Sub Routers
+import donorRouter from './routes/donors';
+app.use('/api', donorRouter);
+
 export default app;
