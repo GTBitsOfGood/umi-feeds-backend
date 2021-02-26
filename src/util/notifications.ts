@@ -38,10 +38,8 @@ const sendPushNotifications = (messages: ExpoPushMessage[]) => {
             for (const ticket of tickets) {
                 // NOTE: Not all tickets have IDs; for example, tickets for notifications
                 // that could not be enqueued will have error information and no receipt ID.
-                // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
                 // @ts-ignore this line checks if ticket.id even exists so don't worry that it might not
                 if (ticket.id) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
                     // @ts-ignore already checked if ticket.id exists
                     receiptIds.push(ticket.id);
                 }
@@ -59,20 +57,17 @@ const sendPushNotifications = (messages: ExpoPushMessage[]) => {
                         // The receipts specify whether Apple or Google successfully received the
                         // notification and information about an error, if one occurred.
                         for (const receiptId in receipts) {
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
                             // @ts-ignore I know this code works because it is provided by Expo
                             const { status, message, details } = receipts[receiptId];
                             if (status === 'error') {
                                 console.error(
                                     `There was an error sending a notification: ${message}`
                                 );
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
                                 // @ts-ignore I know this code works because it is provided by Expo
                                 if (details && details.error) {
                                     // The error codes are listed in the Expo documentation:
                                     // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
                                     // You must handle the errors appropriately.
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
                                     // @ts-ignore I know this code works because it is provided by Expo
                                     console.error(`The error code is ${details.error}`);
                                 }

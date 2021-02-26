@@ -66,7 +66,7 @@ app.get('/testpush', function(req, res) {
     res.send('testing push notification');
     // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself
     sendBatchNotification('Umifeeds','this is a test', ['']);
-})
+});
 
 // Sub Routers
 import donorRouter from './routes/donors';
