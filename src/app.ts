@@ -71,7 +71,7 @@ const checkJwt = jwt({
     }),
 
     // validate the audience and the issuer
-    audience: process.env.AUTH0_AUDIENCE,
+    audience: "https://test/",
     issuer: 'https://bog-dev.us.auth0.com/',
     algorithms: ['RS256']
 });
@@ -81,7 +81,7 @@ const checkJwt = jwt({
  */
 
 //app.get('/api', apiController.getApi);
-app.get('/test-auth0-security', checkJwt, jwtAuthz(['read:test']), apiController.test_auth0);
+app.get('/test-auth0-security', checkJwt, apiController.test_auth0);
 
 export default app;
 
