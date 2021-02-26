@@ -22,6 +22,7 @@ export interface DonationDocument extends Document {
 const donationSchema = new Schema<DonationDocument>({
     donor: {
         type: Schema.Types.ObjectId,
+        ref: 'Donor',
         required: true
     },
     availability: {
