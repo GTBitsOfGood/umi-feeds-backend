@@ -62,10 +62,10 @@ app.use(fileupload());
 
 // Routes
 app.post('/upload', imageController.postImage);
-app.get('/testpush', function(req, res) {
+app.post('/testpush', function(req, res) {
     res.send('testing push notification');
-    // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself
-    sendBatchNotification('Umifeeds','this is a test', ['']);
+    // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]
+    sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
 });
 
 // Sub Routers
