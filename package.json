@@ -27,14 +27,15 @@
         "run:ts-node:script": "cross-env ts-node -O {\\\"module\\\":\\\"commonjs\\\"} -r module-alias/register",
         "lint:tsc": "tsc --noEmit",
         "lint:eslint": "eslint \"./**/*.{tsx,ts,js,jsx}\" --fix --cache",
+        "tsc": "tsc",
         "secrets": "npm run secrets:logout && cross-env-shell BW_SESSION=`bw login product@bitsofgood.org --raw` \"npm run secrets:sync\"",
         "secrets:logout": "(bw logout || exit 0)",
         "secrets:login": "bw login product@bitsofgood.org",
         "secrets:sync": "bw sync && bw get item Umi-Feeds/development/backend/.env | fx .notes > \".env\""
     },
     "engines": {
-        "node": ">= 6.9.4",
-        "npm": ">= 4.4.0"
+        "node": "14.x",
+        "npm": "6.x"
     },
     "dependencies": {
         "@azure/arm-storage": "^15.1.0",
