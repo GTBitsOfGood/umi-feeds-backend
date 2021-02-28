@@ -114,10 +114,10 @@ export const deleteDonation = (req: Request, res: Response) => {
 
 /**
  * Queries donations made by User
- * @route GET /query-donations/:user_id
+ * @route GET /find-user-donations/:user_id
  */
 
- export const queryDonation = (req: Request, res:Response) => {
+ export const userDonations = (req: Request, res:Response) => {
      const id = req.params.user_id;
      return Donation.find({donor: id})
         .then(result => res.status(200).json({ success: true, donations: result }))
