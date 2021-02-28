@@ -9,6 +9,9 @@ import path from 'path';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import bluebird from 'bluebird';
+import jwt from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
+import jwtAuthz from 'express-jwt-authz';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import {sendBatchNotification} from './util/notifications';
 
@@ -60,6 +63,21 @@ app.use(
 const fileupload = require('express-fileupload');
 app.use(fileupload());
 
+const checkJwt = jwt({
+    // Dynamically provide a signing key
+    secret: jwksRsa.expressJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: 'https://bog-dev.us.auth0.com/.well-known/jwks.json'
+    }),
+
+    // validate the audience and the issuer
+    audience: 'https://test/',
+    issuer: 'https://bog-dev.us.auth0.com/',
+    algorithms: ['RS256']
+});
+
 // Routes
 app.post('/upload', imageController.postImage);
 app.post('/testpush', function(req, res) {
@@ -72,4 +90,17 @@ app.post('/testpush', function(req, res) {
 import donorRouter from './routes/donors';
 app.use('/api', donorRouter);
 
+/**
+ * To make a request to this, go to https://manage.auth0.com/dashboard/us/bog-dev/apis/602861e9ea4b12003f71d5d8/test
+ * and log in with the credentials in the Product Bitwarden. (Or, go to the Auth0 Dashboard > APIs > Umi-Feeds Test API
+ * > Test tab.) Scroll down to the section "Sending the token to the API". Make a GET request to /test-auth0-security with the authorization header there; the value of the authorization header would be something like Bearer jifdojioijoggiojreioioviofiojblahblah
+ * Note that this authorization token won't work forever; it expires after a couple hours.
+ * The test page also provides information about how to get an authorization token programmatically instead of copying 
+ * it from that Auth0 dashboard page.
+ */
+app.get('/test-auth0-security', checkJwt, (req, res) => {
+    res.send('Secured');
+});
+
 export default app;
+
