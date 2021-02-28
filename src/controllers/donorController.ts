@@ -67,101 +67,97 @@ export const getDonations = (req: Request, res: Response) => {
  * @route POST /donations
  */
 export const postDonations = async (req: Request, res: Response) => {
+    const jsonBody = JSON.parse(req.body.json);
     try {
-        if (!req.files) {
-            res.status(400).json({
-                status: false,
-                message: 'No images uploaded'
-            });
-        } else if (!req.files.descriptionImage && !req.files.foodImage) {
+        if (!req.files.descriptionImage && !jsonBody.description) {
             res.status(400).send({
                 status: false,
-                message: 'No images attached to the key "descriptionImage" or "foodImage" in your request',
+                message: 'No images attached to the key "descriptionImage" or description in your request',
                 sentReq: String(req.files)
             });
         } else {
             const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-            const descriptionImages = req.files.descriptionImage as UploadedFile[];
-            const descriptionUrls: String[] = [];
+            const descriptionUrls: string[] = [];
+            const foodUrls: string[] = [];
 
-            for (let i = 0; i < descriptionImages.length; i++) {
-                const imgRequest = descriptionImages[i] as UploadedFile;
+            if (req.files.descriptionImage) {
+                const descriptionImages: UploadedFile[] = req.files.descriptionImage as UploadedFile[];
 
-                blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-                    if (error) {
-                        console.error(`Error in createBlockBlobFromText: ${error}`);
-                        return res.status(500).json({error: error.message});
-                    }
-                });
-                let url = "https://umifeedsimageupload.blob.core.windows.net/" + containerName + "/" + imgRequest.name; 
-                descriptionUrls.push(url)
+                if (!Array.isArray(descriptionImages)) {
+                    const imgRequest = descriptionImages as UploadedFile;
+                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
+                        if (error) {
+                            console.error(`Error in createBlockBlobFromText: ${error}`);
+                            return res.status(500).json({error: error.message});
+                        }
+                    });
+                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
+                    descriptionUrls.push(url);
+                }
 
+                for (let i = 0; i < descriptionImages.length; i++) {
+                    const imgRequest = descriptionImages[i] as UploadedFile;
+
+                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
+                        if (error) {
+                            console.error(`Error in createBlockBlobFromText: ${error}`);
+                            return res.status(500).json({error: error.message});
+                        }
+                    });
+                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
+                    descriptionUrls.push(url);
+                }
             }
-            /*
-            const foodImages = req.files.foodImage as UploadedFile[];
-            const foodUrls: String[] = [];
 
-            for (let i = 0; i < foodImages.length; i++) {
-                const imgRequest = foodImages[i] as UploadedFile;
+            if (req.files.foodImage) {
+                const foodImages = req.files.foodImage as UploadedFile[];
 
-                blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-                    if (error) {
-                        console.error(`Error in createBlockBlobFromText: ${error}`);
-                        return res.status(500).json({error: error.message});
-                    }
+                if (!Array.isArray(foodImages)) {
+                    const imgRequest = foodImages as UploadedFile;
+                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
+                        if (error) {
+                            console.error(`Error in createBlockBlobFromText: ${error}`);
+                            return res.status(500).json({error: error.message});
+                        }
+                    });
+                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
+                    foodUrls.push(url);
+                }
+
+                for (let i = 0; i < foodImages.length; i++) {
+                    const imgRequest = foodImages[i] as UploadedFile;
+
+                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
+                        if (error) {
+                            console.error(`Error in createBlockBlobFromText: ${error}`);
+                            return res.status(500).json({error: error.message});
+                        }
+                    });
+                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
+                    foodUrls.push(url);
+                } 
+            }
+        
+            jsonBody['descriptionImages'] = descriptionUrls;
+            jsonBody['foodImages'] = foodUrls;
+            const donation = new Donation(jsonBody);
+            return donation.save()
+            .then(result => {
+                return res.status(201).json({
+                    donation: result
                 });
-                let url = "https://umifeedsimageupload.blob.core.windows.net/" + containerName + "/" + imgRequest.name; 
-                foodUrls.push(url)
-
-            } 
-            res.status(200).json({success: true, result: descriptionUrls});
-            */
+            })
+            .catch(error => {
+                return res.status(500).json({
+                    message: error.message
+                });
+            }); 
         } 
-        const jsonData = req.files.test as UploadedFile;
-        let test = JSON.parse(jsonData.data.toString())
-        console.log(test)
-        res.status(200).json({success: true})
-    } catch (err) {
-        console.error(err);
-        res.status(500).send(String(err));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: error.message});
     }
-    /* 
-    const donation = new Donation(req.body);
-    return donation.save()
-    .then(result => {
-        return res.status(201).json({
-            donation: result
-        });
-    })
-    .catch(error => {
-        return res.status(500).json({
-            message: error.message
-        });
-    }); */
-
 };
-
-/**
- * Upload Images for Donations
- * @route PUT /donations/images
- */
-
- export const uploadImageDonations = (req: Request, res: Response) => {
-     // Upload Image code
-     const id = req.body.id;
-     Donation.updateOne({_id: id}, {
-         descriptionImages: [],
-         foodImages: []
-     }).then(result => {
-         res.status(200).json({
-             donation: result
-         })
-     }).catch(error => {
-         res.status(500).json({
-             message: error.message
-         })
-     })
- }
 
 
 /**
