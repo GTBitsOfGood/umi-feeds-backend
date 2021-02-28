@@ -32,6 +32,10 @@
         "secrets:login": "bw login product@bitsofgood.org",
         "secrets:sync": "bw sync && bw get item Umi-Feeds/development/backend/.env | fx .notes > \".env\""
     },
+    "engines": {
+        "node": ">= 6.9.4",
+        "npm": ">= 4.4.0"
+    },
     "dependencies": {
         "@azure/arm-storage": "^15.1.0",
         "@azure/ms-rest-nodeauth": "^3.0.6",
