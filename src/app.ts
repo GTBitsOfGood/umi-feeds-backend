@@ -10,11 +10,12 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 import bluebird from 'bluebird';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
+import {sendBatchNotification} from './util/notifications';
 
 const MongoStore = mongo(session);
 
 // Controllers (route handlers)
-import * as apiController from './controllers/api';
+import * as imageController from './controllers/imageUpload';
 
 // Create Express server
 const app = express();
@@ -56,11 +57,16 @@ app.use((req, res, next) => {
 app.use(
     express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
+const fileupload = require('express-fileupload');
+app.use(fileupload());
 
-/**
- * API examples routes.
- */
-app.get('/api', apiController.getApi);
+// Routes
+app.post('/upload', imageController.postImage);
+app.post('/testpush', function(req, res) {
+    res.send('testing push notification');
+    // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]
+    sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
+});
 
 // Sub Routers
 import donorRouter from './routes/donors';

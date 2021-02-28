@@ -44,7 +44,7 @@ export const postDonors = (req: Request, res: Response) => {
  * @route GET /donations
  */
 export const getDonations = (req: Request, res: Response) => {
-    Donation.find()
+    Donation.find().populate('donor', '_id name latitude longitude')
     .then(results => {
         return res.status(200).json({
             donations: results,
@@ -86,6 +86,7 @@ export const availPickup = (req: Request, res: Response) => {
         'availability.startTime' : { '$lte' : new Date() },  
         'availability.endTime' : { '$gte' : new Date() }
     })
+    .populate('donor', '_id name latitude longitude')
     .then(result => {
         return res.status(200).json({
             donation: result
