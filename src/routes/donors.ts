@@ -8,5 +8,6 @@ router.get('/donations', donorController.getDonations);
 router.post('/donations', donorController.postDonations);
 router.delete('/donations/:donation_id', donorController.deleteDonation);
 router.get('/available-pickup', donorController.availPickup);
+router.get('/query-donations/:user_id', donorController.queryDonation);
 
 export default router;
