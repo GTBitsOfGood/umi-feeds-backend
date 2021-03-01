@@ -111,4 +111,18 @@ export const deleteDonation = (req: Request, res: Response) => {
             res.status(400).json({ success: false, message: error.message })
         );
 };
+
+
+/**
+ * Queries donations made by User
+ * @route GET /donors/:donor_id/donations
+ */
+ export const userDonations = (req: Request, res: Response) => {
+     const id = req.params.donor_id;
+     return Donation.find({ donor: id })
+        .then(result => res.status(200).json({ success: true, donations: result }))
+        .catch((error: Error) => 
+            res.status(400).json({ success: false, message: error.message })
+        );
+ };
   

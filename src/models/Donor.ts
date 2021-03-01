@@ -30,4 +30,3 @@ const donorSchema = new Schema<DonorDocument>({
 }, { timestamps: true });
 
 export const Donor = mongoose.model<DonorDocument>('Donor', donorSchema);
-    
