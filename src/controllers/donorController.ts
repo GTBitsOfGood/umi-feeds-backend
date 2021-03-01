@@ -3,7 +3,6 @@ import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
 import { UploadedFile } from 'express-fileupload';
 import storage from 'azure-storage';
-import fs from 'fs';
 
 const containerName = 'image-container';
 
@@ -70,10 +69,9 @@ export const postDonations = async (req: Request, res: Response) => {
     const jsonBody = JSON.parse(req.body.json);
     try {
         if (!req.files.descriptionImage && !jsonBody.description) {
-            res.status(400).send({
+            res.status(400).json({
                 status: false,
-                message: 'No images attached to the key "descriptionImage" or description in your request',
-                sentReq: String(req.files)
+                message: 'No images attached to the key "descriptionImage" or a description in your request',
             });
         } else {
             const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
