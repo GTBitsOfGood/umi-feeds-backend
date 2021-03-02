@@ -15,7 +15,7 @@ describe('POST /api/donors with no body', () => {
 });
 
 describe('POST /api/donors with valid body', () => {
-    it('should return 200', () => {
+    it('should return 201 Created', () => {
         return request(app).post('/api/donors')
         .send({
             'name': 'Slutty Vegan 2.0',
@@ -24,6 +24,6 @@ describe('POST /api/donors with valid body', () => {
             'address': '1542 Ralph David Abernathy Blvd SW, Atlanta, GA 30310',
             'phoneNumber': '8554397588' 
         })    
-        .expect(200);
+        .expect(201);
     });
 });

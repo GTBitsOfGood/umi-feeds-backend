@@ -33,12 +33,12 @@ describe('POST /api/donations with no body', () => {
 });
 
 describe('POST /api/donations with valid body', () => {
-    it('should return 200 OK', () => {
+    it('should return 201 Created', () => {
         return request(app).post('/api/donations')
             .send({'donor': '602bf82713e73d625cc0d522'})
             .send({'availability': { 'startTime': '2012-04-21T18:25:43-05:00', 'endTime': '2019-04-21T18:25:43-05:00' },})
             .send({'description': 'Antique Impossible Burgers'})
-            .expect(200);
+            .expect(201);
     });
 });
 
