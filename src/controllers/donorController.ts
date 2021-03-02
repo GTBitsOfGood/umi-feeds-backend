@@ -41,7 +41,7 @@ export const postDonors = (req: Request, res: Response) => {
 
 /**
  * Modifies Donors
- * @route PUT /donors
+ * @route PUT /donors/:donor_id
  */
 export const modifyDonor = (req: Request, res: Response) => {
     const id = req.params.donor;
@@ -128,7 +128,7 @@ export const deleteDonation = (req: Request, res: Response) => {
 
 /**
  * Modifies Donations
- * @route PUT /donations
+ * @route PUT /donations/:donation_id
  */
 export const modifyDonation = (req: Request, res: Response) => {
     const id = req.params.donation_id;
