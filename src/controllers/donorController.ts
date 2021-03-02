@@ -48,7 +48,7 @@ export const postDonors = (req: Request, res: Response) => {
  * @route GET /donations
  */
 export const getDonations = (req: Request, res: Response) => {
-    Donation.find()
+    Donation.find().populate('donor', '_id name latitude longitude')
     .then(results => {
         return res.status(200).json({
             donations: results,
@@ -168,6 +168,7 @@ export const availPickup = (req: Request, res: Response) => {
         'availability.startTime' : { '$lte' : new Date() },  
         'availability.endTime' : { '$gte' : new Date() }
     })
+    .populate('donor', '_id name latitude longitude')
     .then(result => {
         return res.status(200).json({
             donation: result
@@ -180,4 +181,30 @@ export const availPickup = (req: Request, res: Response) => {
     });
 };
 
+/**
+ * Deletes Donations
+ * @route DELETE /donations/:donation_id
+ */
+export const deleteDonation = (req: Request, res: Response) => {
+    const id = req.params.donation_id;
+    return Donation.findByIdAndDelete(id)
+        .then(result => res.status(200).json({ success: true, deleted: result }))
+        .catch((error: Error) => 
+            res.status(400).json({ success: false, message: error.message })
+        );
+};
 
+
+/**
+ * Queries donations made by User
+ * @route GET /donors/:donor_id/donations
+ */
+ export const userDonations = (req: Request, res: Response) => {
+     const id = req.params.donor_id;
+     return Donation.find({ donor: id })
+        .then(result => res.status(200).json({ success: true, donations: result }))
+        .catch((error: Error) => 
+            res.status(400).json({ success: false, message: error.message })
+        );
+ };
+  
