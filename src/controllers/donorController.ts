@@ -1,6 +1,8 @@
 import { Response, Request, NextFunction } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
+import * as userController from './userController';
+import {sendBatchNotification} from '../util/notifications';
 
 /**
  * Gets Donations
@@ -63,6 +65,11 @@ export const getDonations = (req: Request, res: Response) => {
  */
 export const postDonations = (req: Request, res: Response) => {
     const donation = new Donation(req.body);
+    Donor.findById(req.body.donor).then((result => {
+        userController.getPushTokens('admin').then((tokens: string[]) => {
+            sendBatchNotification('New donation from ' + result.name + '!', req.body['description'], tokens);
+        });
+    }));
     return donation.save()
     .then(result => {
         return res.status(201).json({
@@ -82,8 +89,8 @@ export const postDonations = (req: Request, res: Response) => {
  */
 
 export const availPickup = (req: Request, res: Response) => {
-    Donation.find({ 
-        'availability.startTime' : { '$lte' : new Date() },  
+    Donation.find({
+        'availability.startTime' : { '$lte' : new Date() },
         'availability.endTime' : { '$gte' : new Date() }
     })
     .populate('donor', '_id name latitude longitude')
@@ -107,7 +114,7 @@ export const deleteDonation = (req: Request, res: Response) => {
     const id = req.params.donation_id;
     return Donation.findByIdAndDelete(id)
         .then(result => res.status(200).json({ success: true, deleted: result }))
-        .catch((error: Error) => 
+        .catch((error: Error) =>
             res.status(400).json({ success: false, message: error.message })
         );
 };
@@ -121,8 +128,7 @@ export const deleteDonation = (req: Request, res: Response) => {
      const id = req.params.donor_id;
      return Donation.find({ donor: id })
         .then(result => res.status(200).json({ success: true, donations: result }))
-        .catch((error: Error) => 
+        .catch((error: Error) =>
             res.status(400).json({ success: false, message: error.message })
         );
  };
-  
