@@ -2,9 +2,8 @@ import { Response, Request, NextFunction } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
 import { UploadedFile } from 'express-fileupload';
-import storage from 'azure-storage';
+import { uploadFiles, uploadFile } from '../util/image';
 
-const containerName = 'image-container';
 
 /**
  * Gets Donations
@@ -64,6 +63,11 @@ export const getDonations = (req: Request, res: Response) => {
 /**
  * Posts Donations
  * @route POST /donations
+ * Request Body
+ * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose. 
+ * @param {UploadedFile? | Array<UploadedFile>?} req.files.descriptionImage Images of a description of the food. Having either this or the "description" key in `req.body.json` is mandatory.
+ * * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional
+ * etc.
  */
 export const postDonations = async (req: Request, res: Response) => {
     const jsonBody = JSON.parse(req.body.json);
@@ -71,70 +75,31 @@ export const postDonations = async (req: Request, res: Response) => {
         if (!req.files.descriptionImage && !jsonBody.description) {
             res.status(400).json({
                 status: false,
-                message: 'No images attached to the key "descriptionImage" or a description in your request',
+                message: 'No images attached to the key "descriptionImage" or a description in the stringified json body.',
             });
         } else {
-            const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-            const descriptionUrls: string[] = [];
-            const foodUrls: string[] = [];
+            let descriptionUrls: string[] = [];
+            let foodUrls: string[] = [];
 
             if (req.files.descriptionImage) {
                 const descriptionImages: UploadedFile[] = req.files.descriptionImage as UploadedFile[];
-
                 if (!Array.isArray(descriptionImages)) {
-                    const imgRequest = descriptionImages as UploadedFile;
-                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-                        if (error) {
-                            console.error(`Error in createBlockBlobFromText: ${error}`);
-                            return res.status(500).json({error: error.message});
-                        }
-                    });
-                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
-                    descriptionUrls.push(url);
+                    const image = descriptionImages as UploadedFile;
+                    descriptionUrls = uploadFile(image, res);
+                } else {
+                    descriptionUrls = uploadFiles(descriptionImages, res);
                 }
-
-                for (let i = 0; i < descriptionImages.length; i++) {
-                    const imgRequest = descriptionImages[i] as UploadedFile;
-
-                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-                        if (error) {
-                            console.error(`Error in createBlockBlobFromText: ${error}`);
-                            return res.status(500).json({error: error.message});
-                        }
-                    });
-                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
-                    descriptionUrls.push(url);
-                }
-            }
-
+            } 
+    
             if (req.files.foodImage) {
                 const foodImages = req.files.foodImage as UploadedFile[];
-
                 if (!Array.isArray(foodImages)) {
-                    const imgRequest = foodImages as UploadedFile;
-                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-                        if (error) {
-                            console.error(`Error in createBlockBlobFromText: ${error}`);
-                            return res.status(500).json({error: error.message});
-                        }
-                    });
-                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
-                    foodUrls.push(url);
+                    const image = foodImages as UploadedFile;
+                    foodUrls = uploadFile(image, res);
+                } else {
+                    foodUrls = uploadFiles(foodImages, res);
                 }
-
-                for (let i = 0; i < foodImages.length; i++) {
-                    const imgRequest = foodImages[i] as UploadedFile;
-
-                    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-                        if (error) {
-                            console.error(`Error in createBlockBlobFromText: ${error}`);
-                            return res.status(500).json({error: error.message});
-                        }
-                    });
-                    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
-                    foodUrls.push(url);
-                } 
-            }
+            } 
         
             jsonBody['descriptionImages'] = descriptionUrls;
             jsonBody['foodImages'] = foodUrls;
