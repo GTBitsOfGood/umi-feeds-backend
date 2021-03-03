@@ -1,6 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
 import { User } from '../models/User';
-import {Donor} from "../models/Donor";
 
 /**
  * Query user based on type
@@ -33,23 +32,38 @@ const queryOnUserType = (userType: string) => {
  * @param userType string specifying userType either 'donor', 'volunteer', 'recipient', 'admin', or 'any'
  */
 export const getPushTokens = (userType: string) => {
-    queryOnUserType(userType).select('pushTokens').then(result => {
-        console.log(result);
-        return result;
+    return new Promise((resolve, reject) => {
+        queryOnUserType(userType).select('pushTokens').then(result => {
+            const tokens: string[] = [];
+            result.forEach((userDoc) => {
+               for (let i = 0; i < userDoc.pushTokens.length; i ++) {
+                   tokens.push(userDoc.pushTokens[i]);
+               }
+            });
+            resolve(tokens);
+        }).catch(error => {
+            reject(error);
+        });
     });
 };
 
 /**
- * Gets Donations
- * @route GET /donors
+ * Gets User Push Tokens
+ * @route GET /tokens
  */
 export const getTokens = (req: Request, res: Response) => {
-    const tokens = getPushTokens('donor');
-    return res.status(200).json({
-        tokens: tokens,
-    });
+    getPushTokens('any')
+        .then(result => {
+            return res.status(201).json({
+                tokens: result
+            });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
+        });
 };
-
 
 /**
  * Posts Users
