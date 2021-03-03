@@ -88,7 +88,9 @@ app.post('/testpush', function(req, res) {
 
 // Sub Routers
 import donorRouter from './routes/donors';
+import userRouter from './routes/users';
 app.use('/api', donorRouter);
+app.use('/api', userRouter);
 
 /**
  * To make a request to this, go to https://manage.auth0.com/dashboard/us/bog-dev/apis/602861e9ea4b12003f71d5d8/test
