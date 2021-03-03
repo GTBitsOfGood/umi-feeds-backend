@@ -1,11 +1,13 @@
 import { Response, Request, NextFunction } from 'express';
 import { User } from '../models/User';
 
+type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
+
 /**
  * Query user based on type
  * @param userType string specifying userType either 'donor', 'volunteer', 'recipient', 'admin', or 'any'
  */
-const queryOnUserType = (userType: string) => {
+const queryOnUserType = (userType: UserType) => {
     if (userType == 'donor') {
         return User.find({donorInfo:{$exists: true}});
     }
@@ -31,12 +33,12 @@ const queryOnUserType = (userType: string) => {
  * Gets push tokens based on user type
  * @param userType string specifying userType either 'donor', 'volunteer', 'recipient', 'admin', or 'any'
  */
-export const getPushTokens = (userType: string) => {
+export const getPushTokens = (userType: UserType) => {
     return new Promise((resolve, reject) => {
         queryOnUserType(userType).select('pushTokens').then(result => {
             const tokens: string[] = [];
             result.forEach((userDoc) => {
-               for (let i = 0; i < userDoc.pushTokens.length; i ++) {
+               for (let i = 0; i < userDoc.pushTokens.length; i++) {
                    tokens.push(userDoc.pushTokens[i]);
                }
             });
