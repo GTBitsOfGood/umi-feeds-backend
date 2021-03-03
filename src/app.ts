@@ -88,14 +88,16 @@ app.post('/testpush', function(req, res) {
 
 // Sub Routers
 import donorRouter from './routes/donors';
+import userRouter from './routes/users';
 app.use('/api', donorRouter);
+app.use('/api', userRouter);
 
 /**
  * To make a request to this, go to https://manage.auth0.com/dashboard/us/bog-dev/apis/602861e9ea4b12003f71d5d8/test
  * and log in with the credentials in the Product Bitwarden. (Or, go to the Auth0 Dashboard > APIs > Umi-Feeds Test API
  * > Test tab.) Scroll down to the section "Sending the token to the API". Make a GET request to /test-auth0-security with the authorization header there; the value of the authorization header would be something like Bearer jifdojioijoggiojreioioviofiojblahblah
  * Note that this authorization token won't work forever; it expires after a couple hours.
- * The test page also provides information about how to get an authorization token programmatically instead of copying 
+ * The test page also provides information about how to get an authorization token programmatically instead of copying
  * it from that Auth0 dashboard page.
  */
 app.get('/test-auth0-security', checkJwt, (req, res) => {
