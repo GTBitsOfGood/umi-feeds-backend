@@ -1,88 +1,48 @@
-import bcrypt from 'bcrypt-nodejs';
-import crypto from 'crypto';
-import mongoose from 'mongoose';
+import mongoose, {Schema} from 'mongoose';
 
 export type UserDocument = mongoose.Document & {
-    email: string;
-    password: string;
-    passwordResetToken: string;
-    passwordResetExpires: Date;
-
-    facebook: string;
-    tokens: AuthToken[];
-
-    profile: {
+    name: string;
+    email: string; // later down the line, we will make this optional for recipients
+    pushTokens: string[]; // expo push tokens
+    donorInfo?: {
+        // all of these attributes are about the business
+        // these attributes are required if donorInfo is present
         name: string;
-        gender: string;
-        location: string;
-        website: string;
-        picture: string;
+        phone: string;
+        address: string;
+        longitude: number;
+        latitude: number;
     };
-
-    comparePassword: comparePasswordFunction;
-    gravatar: (size: number) => string;
+    volunteerInfo?: {
+        phone: string;
+    };
+    recipient: boolean;
+    admin: boolean; // in reality, admin access will be based on the Auth0 token, not this attribute
 };
-
-type comparePasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
-
-export interface AuthToken {
-    accessToken: string;
-    kind: string;
-}
 
 const userSchema = new mongoose.Schema<UserDocument>({
-    email: { type: String, unique: true },
-    password: String,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
-
-    facebook: String,
-    twitter: String,
-    google: String,
-    tokens: Array,
-
-    profile: {
-        name: String,
-        gender: String,
-        location: String,
-        website: String,
-        picture: String
-    }
+    name: {type: String, required: true},
+    email: { type: String, unique: true, required: true }, // later down the line, we will make this optional for recipients
+    pushTokens: {type: [String], required: true}, // expo push tokens
+    donorInfo: { type: new Schema({
+            // all of these attributes are about the business
+            // these attributes are required if donorInfo is present
+            name: {type: String, required: true},
+            phone: {type: String, required: true},
+            address: {type: String, required: true},
+            longitude: {type: Number, required: true},
+            latitude: {type: Number, required: true},
+        }),
+        required: false,
+    },
+    volunteerInfo: {
+        type: new Schema({
+            phone: {type: String, required: true}
+        }),
+        required: false,
+    },
+    recipient: {type: Boolean, required: true},
+    admin: {type: Boolean, required: true} // in reality, admin access will be based on the Auth0 token, not this attribute
 }, { timestamps: true });
-
-/**
- * Password hash middleware.
- */
-userSchema.pre('save', function save(next) {
-    const user = this as UserDocument;
-    if (!user.isModified('password')) { return next(); }
-    bcrypt.genSalt(10, (err, salt) => {
-        if (err) { return next(err); }
-        bcrypt.hash(user.password, salt, undefined, (err: mongoose.Error, hash) => {
-            if (err) { return next(err); }
-            user.password = hash;
-            next();
-        });
-    });
-});
-
-const comparePassword: comparePasswordFunction = function (candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
-        cb(err, isMatch);
-    });
-};
-
-userSchema.methods.comparePassword = comparePassword;
-
-/**
- * Helper method for getting user's gravatar.
- */
-userSchema.methods.gravatar = function (size: number = 200) {
-    if (!this.email) {
-        return `https://gravatar.com/avatar/?s=${size}&d=retro`;
-    }
-    const md5 = crypto.createHash('md5').update(this.email).digest('hex');
-    return `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
-};
 
 export const User = mongoose.model<UserDocument>('User', userSchema);
