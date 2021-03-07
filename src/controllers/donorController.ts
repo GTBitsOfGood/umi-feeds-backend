@@ -42,6 +42,20 @@ export const postDonors = (req: Request, res: Response) => {
 };
 
 /**
+ * Modifies Donors
+ * @route PUT /donors/:donor_id
+ */
+export const modifyDonor = (req: Request, res: Response) => {
+    const id = req.params.donor;
+    const updatedDonor = req.params;
+    return Donor.findByIdAndUpdate(id, updatedDonor)
+        .then(result => res.status(200).json({ success: true }))
+        .catch((error: Error) => 
+            res.status(400).json({ success: false, message: error.message })
+        );
+};
+
+/**
  * Gets Donations
  * @route GET /donations
  */
@@ -119,6 +133,19 @@ export const deleteDonation = (req: Request, res: Response) => {
         );
 };
 
+/**
+ * Modifies Donations
+ * @route PUT /donations/:donation_id
+ */
+export const modifyDonation = (req: Request, res: Response) => {
+    const id = req.params.donation_id;
+    const updatedDonation = req.params;
+    return Donation.findByIdAndUpdate(id, updatedDonation)
+        .then(result => res.status(200).json({ success: true }))
+        .catch((error: Error) => 
+            res.status(400).json({ success: false, message: error.message })
+        );
+};
 
 /**
  * Queries donations made by User
