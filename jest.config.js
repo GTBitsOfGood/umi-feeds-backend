@@ -14,5 +14,6 @@ module.exports = {
     testMatch: [
         '**/test/**/*.test.(ts|js)'
     ],
+    setupFiles: ['./test/test-environment-config.ts'], // RUNS THESE FILES BEFORE RUNNING TESTS (sets up environment)
     testEnvironment: 'node'
 };
