@@ -14,7 +14,6 @@ import jwksRsa from 'jwks-rsa';
 import jwtAuthz from 'express-jwt-authz';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import {sendBatchNotification} from './util/notifications';
-const { connectToDatabase } = require('../../database/database-connect');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const MongoStore = mongo(session);
@@ -38,7 +37,7 @@ if (ENVIRONMENT !== 'test') {
         // process.exit();
     });
 } else if (ENVIRONMENT === 'test') {
-    
+
     // Connect to mongo memory server for testing
     const mongoServer = new MongoMemoryServer(); // in memory server
 

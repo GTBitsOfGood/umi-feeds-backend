@@ -3,7 +3,6 @@ import app from '../src/app';
 
 let donorID = null;
 
-
 describe('GET /api/donors', () => {
     it('should return 200 OK', () => {
         return request(app).get('/api/donors')
