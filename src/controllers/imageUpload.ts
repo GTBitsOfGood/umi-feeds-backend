@@ -1,6 +1,8 @@
 import { Response, Request } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import storage from 'azure-storage';
+import { uid } from 'uid';
+import { uniq } from 'shelljs';
 
 const containerName = 'image-container';
 
@@ -26,8 +28,9 @@ export const postImage = (req: Request, res: Response) => {
         } else {
             const imgRequest = req.files.image as UploadedFile;
             const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
+            const uniqueID: string = uid(11);
             
-            blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (err: Error) => {
+            blobSVC.createBlockBlobFromText(containerName, (imgRequest.name + uniqueID), imgRequest.data, (err: Error) => {
                 if (err) {
                     console.error(`Error in createBlockBlobFromText: ${err}`);
                     return res.status(500).send(String(err));
