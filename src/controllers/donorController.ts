@@ -1,18 +1,19 @@
 import { Response, Request, NextFunction } from 'express';
 import { Donor } from '../models/Donor';
+import { User } from '../models/User';
 import { Donation } from '../models/Donation';
 import * as userController from './userController';
 import {sendBatchNotification} from '../util/notifications';
 
 /**
- * Gets Donations
+ * Gets Donors
  * @route GET /donors
  */
 export const getDonors = (req: Request, res: Response) => {
-    Donor.find()
+    User.find({donorInfo : { $exists: true }})
     .then(results => {
         return res.status(200).json({
-            donors: results,
+            donor: results,
         });
     })
     .catch(error => {
@@ -27,7 +28,7 @@ export const getDonors = (req: Request, res: Response) => {
  * @route POST /donors
  */
 export const postDonors = (req: Request, res: Response) => {
-    const donor = new Donor(req.body);
+    const donor = new User(req.body);
     return donor.save()
     .then(result => {
         return res.status(201).json({
@@ -65,7 +66,7 @@ export const getDonations = (req: Request, res: Response) => {
  */
 export const postDonations = (req: Request, res: Response) => {
     const donation = new Donation(req.body);
-    Donor.findById(req.body.donor).then((result => {
+    User.findById(req.body.donor).then((result => {
         userController.getPushTokens('admin').then((tokens: string[]) => {
             sendBatchNotification('New donation from ' + result.name + '!', req.body['description'], tokens);
         });
