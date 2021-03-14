@@ -47,12 +47,15 @@ export const postDonors = (req: Request, res: Response) => {
  * @route PUT /donors/:donor_id
  */
 export const modifyDonor = (req: Request, res: Response) => {
-    const id = req.params.donor;
-    const updatedDonor = req.params;
-    return Donor.findByIdAndUpdate(id, updatedDonor)
-        .then(result => res.status(200).json({ success: true }))
+    const id = req.params.donor_id;
+    return User.findByIdAndUpdate(id, req.body)
+        .then(result => { 
+            return res.status(200).json({ 
+                donor: result 
+            });
+        })
         .catch((error: Error) => 
-            res.status(400).json({ success: false, message: error.message })
+            res.status(400).json({ message: error.message })
         );
 };
 
@@ -140,11 +143,15 @@ export const deleteDonation = (req: Request, res: Response) => {
  */
 export const modifyDonation = (req: Request, res: Response) => {
     const id = req.params.donation_id;
-    const updatedDonation = req.params;
-    return Donation.findByIdAndUpdate(id, updatedDonation)
-        .then(result => res.status(200).json({ success: true }))
+    const updatedDonation = new User(req.body);
+    return User.findByIdAndUpdate(id, updatedDonation)
+        .then(result => { 
+            return res.status(200).json({ 
+                donor: result 
+            });
+        })
         .catch((error: Error) => 
-            res.status(400).json({ success: false, message: error.message })
+            res.status(400).json({ message: error.message })
         );
 };
 
