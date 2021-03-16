@@ -5,44 +5,41 @@ import storage from 'azure-storage';
 const containerName = 'image-container';
 
 /**
- * Upload multiple images into Azure 
- * @param files images 
+ * Upload one or multiple images into Azure. This is helpful because express-fileupload gives you an UploadedFile | UploadedFile[]
+ * @param files a single image file, or an array of image files
+ * @returns the image URLs of the uploaded files
  */
-export function uploadFiles(files: UploadedFile[], res: Response): string[] {
-    const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-    const urls: string[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-        const imgRequest = files[i] as UploadedFile;
-        blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
-            if (error) {
-                console.error(`Error in createBlockBlobFromText: ${error}`);
-                return res.status(500).json({error: error.message});
-            }
-        });
-        const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
-        urls.push(url);
+export function uploadFileOrFiles(files: UploadedFile | UploadedFile[]): string[] {
+    if (Array.isArray(files)) {
+        return uploadFiles(files);
+    } else {
+        return [uploadFile(files)];
     }
-    return urls;
+}
+
+/**
+ * Upload multiple images into Azure 
+ * @param files image files
+ * @returns the image URLs of the uploaded files
+ */
+export function uploadFiles(files: UploadedFile[]): string[] {
+    return files.map(file => uploadFile(file));
 }
 
 /**
  * Upload single image into Azure
- * @param file image
+ * @param file image file
  */
-export function uploadFile(file: UploadedFile, res: Response): string[] {
+export function uploadFile(file: UploadedFile): string {
     const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-    const urls: string[] = [];
     const imgRequest = file as UploadedFile;
 
     blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
         if (error) {
             console.error(`Error in createBlockBlobFromText: ${error}`);
-            return res.status(500).json({error: error.message});
+            throw new Error(error.message);
         }
     });
-    const url = 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
-    urls.push(url);
-    return urls;
+    return 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
 }
 

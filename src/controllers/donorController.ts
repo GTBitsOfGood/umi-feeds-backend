@@ -1,8 +1,7 @@
 import { Response, Request } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
-import { UploadedFile } from 'express-fileupload';
-import { uploadFiles, uploadFile } from '../util/image'; 
+import { uploadFileOrFiles } from '../util/image'; 
 
 /**
  * Gets Donations
@@ -89,28 +88,8 @@ export const postDonations = async (req: Request, res: Response) => {
                 message: 'No images attached to the key "descriptionImage" or a description in the stringified json body.',
             });
         } else {
-            let descriptionUrls: string[] = [];
-            let foodUrls: string[] = [];
-
-            if (req.files.descriptionImage) {
-                const descriptionImages: UploadedFile[] = req.files.descriptionImage as UploadedFile[];
-                if (!Array.isArray(descriptionImages)) {
-                    const image = descriptionImages as UploadedFile;
-                    descriptionUrls = uploadFile(image, res);
-                } else {
-                    descriptionUrls = uploadFiles(descriptionImages, res);
-                }
-            } 
-    
-            if (req.files.foodImage) {
-                const foodImages = req.files.foodImage as UploadedFile[];
-                if (!Array.isArray(foodImages)) {
-                    const image = foodImages as UploadedFile;
-                    foodUrls = uploadFile(image, res);
-                } else {
-                    foodUrls = uploadFiles(foodImages, res);
-                }
-            } 
+            const descriptionUrls: string[] = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+            const foodUrls: string[] = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
         
             jsonBody['descriptionImages'] = descriptionUrls;
             jsonBody['foodImages'] = foodUrls;
