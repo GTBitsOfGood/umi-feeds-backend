@@ -1,8 +1,6 @@
-import { Response, Request, NextFunction } from 'express';
+import { Response, Request } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
-import { UploadedFile } from 'express-fileupload';
-import { uploadFiles, uploadFile } from '../util/image';
 
 
 /**
@@ -11,16 +9,16 @@ import { uploadFiles, uploadFile } from '../util/image';
  */
 export const getDonors = (req: Request, res: Response) => {
     Donor.find()
-    .then(results => {
-        return res.status(200).json({
-            donors: results,
+        .then(results => {
+            return res.status(200).json({
+                donors: results,
+            });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
         });
-    })
-    .catch(error => {
-        return res.status(500).json({
-            message: error.message
-        });
-    });
 };
 
 /**
@@ -30,16 +28,28 @@ export const getDonors = (req: Request, res: Response) => {
 export const postDonors = (req: Request, res: Response) => {
     const donor = new Donor(req.body);
     return donor.save()
-    .then(result => {
-        return res.status(201).json({
-            donor: result
+        .then(result => {
+            return res.status(201).json({
+                donor: result
+            });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
         });
-    })
-    .catch(error => {
-        return res.status(500).json({
-            message: error.message
-        });
-    });
+};
+
+/**
+ * Modifies Donors
+ * @route PUT /donors/:donor_id
+ */
+export const modifyDonor = (req: Request, res: Response) => {
+    const id = req.params.donor;
+    const updatedDonor = req.params;
+    return Donor.findByIdAndUpdate(id, updatedDonor)
+        .then(result => res.status(200).json({ success: true }))
+        .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
 };
 
 /**
@@ -48,16 +58,16 @@ export const postDonors = (req: Request, res: Response) => {
  */
 export const getDonations = (req: Request, res: Response) => {
     Donation.find().populate('donor', '_id name latitude longitude')
-    .then(results => {
-        return res.status(200).json({
-            donations: results,
+        .then(results => {
+            return res.status(200).json({
+                donations: results,
+            });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
         });
-    })
-    .catch(error => {
-        return res.status(500).json({
-            message: error.message
-        });
-    });
 };
 
 /**
@@ -129,21 +139,21 @@ export const postDonations = async (req: Request, res: Response) => {
  */
 
 export const availPickup = (req: Request, res: Response) => {
-    Donation.find({ 
-        'availability.startTime' : { '$lte' : new Date() },  
-        'availability.endTime' : { '$gte' : new Date() }
+    Donation.find({
+        'availability.startTime': { $lte: new Date() },
+        'availability.endTime': { $gte: new Date() }
     })
-    .populate('donor', '_id name latitude longitude')
-    .then(result => {
-        return res.status(200).json({
-            donation: result
+        .populate('donor', '_id name latitude longitude')
+        .then(result => {
+            return res.status(200).json({
+                donation: result
+            });
+        })
+        .catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
         });
-    })
-    .catch(error => {
-        return res.status(500).json({
-            message: error.message
-        });
-    });
 };
 
 /**
@@ -154,22 +164,28 @@ export const deleteDonation = (req: Request, res: Response) => {
     const id = req.params.donation_id;
     return Donation.findByIdAndDelete(id)
         .then(result => res.status(200).json({ success: true, deleted: result }))
-        .catch((error: Error) => 
-            res.status(400).json({ success: false, message: error.message })
-        );
+        .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
 };
 
+/**
+ * Modifies Donations
+ * @route PUT /donations/:donation_id
+ */
+export const modifyDonation = (req: Request, res: Response) => {
+    const id = req.params.donation_id;
+    const updatedDonation = req.params;
+    return Donation.findByIdAndUpdate(id, updatedDonation)
+        .then(result => res.status(200).json({ success: true }))
+        .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
+};
 
 /**
  * Queries donations made by User
  * @route GET /donors/:donor_id/donations
  */
- export const userDonations = (req: Request, res: Response) => {
-     const id = req.params.donor_id;
-     return Donation.find({ donor: id })
+export const userDonations = (req: Request, res: Response) => {
+    const id = req.params.donor_id;
+    return Donation.find({ donor: id })
         .then(result => res.status(200).json({ success: true, donations: result }))
-        .catch((error: Error) => 
-            res.status(400).json({ success: false, message: error.message })
-        );
- };
-  
+        .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
+};

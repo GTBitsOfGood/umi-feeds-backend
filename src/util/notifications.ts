@@ -1,4 +1,4 @@
-import {Expo, ExpoPushMessage, ExpoPushReceiptId, ExpoPushTicket, ExpoPushToken} from 'expo-server-sdk';
+import { Expo, ExpoPushMessage, ExpoPushReceiptId, ExpoPushTicket, ExpoPushToken } from 'expo-server-sdk';
 
 // Create a new Expo SDK client
 // optionally providing an access token if you have enabled push security
@@ -82,8 +82,7 @@ const sendPushNotifications = (messages: ExpoPushMessage[]) => {
     })();
 };
 
-
-const sendBatchNotification = (title: string, body: string, expoPushTokens: ExpoPushToken[], data: object = {}) => {
+const sendBatchNotification = (title: string, body: string, expoPushTokens: ExpoPushToken[], data: Record<string, unknown> = {}) => {
     // Create the messages that you want to send to clients
     const messages: ExpoPushMessage[] = [];
     for (const pushToken of expoPushTokens) {
@@ -99,15 +98,15 @@ const sendBatchNotification = (title: string, body: string, expoPushTokens: Expo
         messages.push({
             to: pushToken,
             sound: 'default',
-            body: body,
-            title: title,
-            data: data,
+            body,
+            title,
+            data,
         });
     }
     sendPushNotifications(messages);
 };
 
-export {sendPushNotifications, sendBatchNotification};
+export { sendPushNotifications, sendBatchNotification };
 
 /*
 This code is partially drawn from https://github.com/expo/expo-server-sdk-node, which is licensed under the MIT license.
