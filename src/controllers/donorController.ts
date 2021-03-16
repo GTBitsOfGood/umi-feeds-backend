@@ -1,7 +1,10 @@
 import { Response, Request } from 'express';
+import { Document } from 'mongoose';
 import { Donor } from '../models/Donor';
-import { Donation } from '../models/Donation';
+import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
+import * as userController from './userController';
+import { sendBatchNotification } from '../util/notifications';
 
 /**
  * Gets Donations
@@ -71,16 +74,16 @@ export const getDonations = (req: Request, res: Response) => {
 };
 
 /**
- * Posts Donations
+ * Creates a new donation, and then then notifies admins about this new donation. 
  * @route POST /donations
- * Request Body
+ * Request body:
  * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose.
  * @param {UploadedFile? | Array<UploadedFile>?} req.files.descriptionImage Images of a description of the food. Having either this or the "description" key in `req.body.json` is mandatory.
- * * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional
+ * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional
  * etc.
  */
 export const postDonations = (req: Request, res: Response) => {
-    const jsonBody = JSON.parse(req.body.json);
+    const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
     try {
         if (!req.files.descriptionImage && !jsonBody.description) {
             res.status(400).json({
@@ -105,6 +108,13 @@ export const postDonations = (req: Request, res: Response) => {
                         message: error.message
                     });
                 });
+
+            // Notify admins about the new donation
+            Donor.findById(jsonBody.donor).then(result => {
+                userController.getPushTokens('admin').then((tokens: string[]) => {
+                    sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
+                });
+            });
         }
     } catch (error) {
         console.error(error);
