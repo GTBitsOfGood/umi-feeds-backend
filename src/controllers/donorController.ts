@@ -1,6 +1,8 @@
 import { Response, Request } from 'express';
+import { Document } from 'mongoose';
 import { Donor } from '../models/Donor';
-import { Donation } from '../models/Donation';
+import { Donation, DonationDocument } from '../models/Donation';
+import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
 
@@ -72,27 +74,49 @@ export const getDonations = (req: Request, res: Response) => {
 };
 
 /**
- * Posts Donations
+ * Creates a new donation, and then then notifies admins about this new donation.
  * @route POST /donations
+ * Request body:
+ * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose. Example: '{"donor":"602bf82713e73d625cc0d522","availability":{"startTime":"2021-03-16T07:59:48.476Z","endTime":"2021-03-17T07:59:48.476Z"}}'
+ * @param {UploadedFile? | Array<UploadedFile>?} req.files.descriptionImage Images of a description of the food. Having either this or the "description" key in `req.body.json` is mandatory.
+ * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional.
+ * In Postman, you would make a request with Body set to form-data. The descriptionImage or foodImage key would be of the File type, and then you'd have a json key with the type set to Text.
  */
 export const postDonations = (req: Request, res: Response) => {
-    const donation = new Donation(req.body);
-    Donor.findById(req.body.donor).then((result => {
-        userController.getPushTokens('admin').then((tokens: string[]) => {
-            sendBatchNotification(`New donation from ${result.name}!`, req.body.description, tokens);
-        });
-    }));
-    return donation.save()
-        .then(result => {
-            return res.status(201).json({
-                donation: result
+    const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
+    try {
+        if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
+            res.status(400).json({
+                success: false,
+                message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
             });
-        })
-        .catch(error => {
-            return res.status(500).json({
-                message: error.message
+        } else {
+            jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+            jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
+            const donation = new Donation(jsonBody);
+            donation.save()
+                .then(result => {
+                    res.status(201).json({
+                        donation: result
+                    });
+                })
+                .catch(error => {
+                    res.status(500).json({
+                        message: error.message
+                    });
+                });
+
+            // Notify admins about the new donation
+            Donor.findById(jsonBody.donor).then(result => {
+                userController.getPushTokens('admin').then((tokens: string[]) => {
+                    sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
+                });
             });
-        });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
 };
 
 /**

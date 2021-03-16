@@ -44,7 +44,6 @@ const donationSchema = new Schema<DonationDocument>({
     },
     description: {
         type: String,
-        required: true
     },
     descriptionImages: {
         type: [String],

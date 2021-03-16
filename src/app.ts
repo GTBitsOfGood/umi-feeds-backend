@@ -94,4 +94,6 @@ app.get('/test-auth0-security', checkJwt, (req, res) => {
     res.send('Secured');
 });
 
+app.post('/upload', imageController.postImage);
+
 export default app;
