@@ -1,7 +1,7 @@
 import { Response, Request } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
-import { uploadFileOrFiles } from '../util/image'; 
+import { uploadFileOrFiles } from '../util/image';
 
 /**
  * Gets Donations
@@ -74,12 +74,12 @@ export const getDonations = (req: Request, res: Response) => {
  * Posts Donations
  * @route POST /donations
  * Request Body
- * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose. 
+ * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose.
  * @param {UploadedFile? | Array<UploadedFile>?} req.files.descriptionImage Images of a description of the food. Having either this or the "description" key in `req.body.json` is mandatory.
  * * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional
  * etc.
  */
-export const postDonations = async (req: Request, res: Response) => {
+export const postDonations = (req: Request, res: Response) => {
     const jsonBody = JSON.parse(req.body.json);
     try {
         if (!req.files.descriptionImage && !jsonBody.description) {
@@ -90,28 +90,27 @@ export const postDonations = async (req: Request, res: Response) => {
         } else {
             const descriptionUrls: string[] = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
             const foodUrls: string[] = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
-        
-            jsonBody['descriptionImages'] = descriptionUrls;
-            jsonBody['foodImages'] = foodUrls;
+
+            jsonBody.descriptionImages = descriptionUrls;
+            jsonBody.foodImages = foodUrls;
             const donation = new Donation(jsonBody);
-            return donation.save()
-            .then(result => {
-                return res.status(201).json({
-                    donation: result
+            donation.save()
+                .then(result => {
+                    res.status(201).json({
+                        donation: result
+                    });
+                })
+                .catch(error => {
+                    res.status(500).json({
+                        message: error.message
+                    });
                 });
-            })
-            .catch(error => {
-                return res.status(500).json({
-                    message: error.message
-                });
-            }); 
-        } 
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 };
-
 
 /**
  * Query Donations available to pickup

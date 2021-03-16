@@ -12,7 +12,6 @@ import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
 
 // Controllers (route handlers)
-import * as apiController from './controllers/api';
 import * as imageController from './controllers/imageUpload';
 
 // Sub Routers

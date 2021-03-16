@@ -18,7 +18,7 @@ export function uploadFileOrFiles(files: UploadedFile | UploadedFile[]): string[
 }
 
 /**
- * Upload multiple images into Azure 
+ * Upload multiple images into Azure
  * @param files image files
  * @returns the image URLs of the uploaded files
  */
@@ -40,6 +40,5 @@ export function uploadFile(file: UploadedFile): string {
             throw new Error(error.message);
         }
     });
-    return 'https://umifeedsimageupload.blob.core.windows.net/' + containerName + '/' + imgRequest.name; 
+    return `https://umifeedsimageupload.blob.core.windows.net/${containerName}/${imgRequest.name}`;
 }
-
