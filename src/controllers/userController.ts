@@ -9,16 +9,16 @@ type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
  */
 const queryOnUserType = (userType: UserType) => {
     if (userType == 'donor') {
-        return User.find({donorInfo:{$exists: true}});
+        return User.find({ donorInfo: { $exists: true } });
     }
     if (userType == 'volunteer') {
-        return User.find({volunteerInfo:{$exists: true}});
+        return User.find({ volunteerInfo: { $exists: true } });
     }
     if (userType == 'recipient') {
-        return User.find({recipient:{$eq: true}});
+        return User.find({ recipient: { $eq: true } });
     }
     if (userType == 'admin') {
-        return User.find({admin:{$eq: true}});
+        return User.find({ admin: { $eq: true } });
     }
     if (userType == 'any') {
         return User.find({});
@@ -38,9 +38,9 @@ export const getPushTokens = (userType: UserType) => {
         queryOnUserType(userType).select('pushTokens').then(result => {
             const tokens: string[] = [];
             result.forEach((userDoc) => {
-               for (let i = 0; i < userDoc.pushTokens.length; i++) {
-                   tokens.push(userDoc.pushTokens[i]);
-               }
+                for (let i = 0; i < userDoc.pushTokens.length; i++) {
+                    tokens.push(userDoc.pushTokens[i]);
+                }
             });
             resolve(tokens);
         }).catch(error => {
