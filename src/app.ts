@@ -1,7 +1,6 @@
 import express from 'express';
-import compression from 'compression';  // compresses requests
+import compression from 'compression'; // compresses requests
 import session from 'express-session';
-import bodyParser from 'body-parser';
 import lusca from 'lusca';
 import mongo from 'connect-mongo';
 import path from 'path';
@@ -9,14 +8,17 @@ import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
-import jwtAuthz from 'express-jwt-authz';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
-import {sendBatchNotification} from './util/notifications';
-
-const MongoStore = mongo(session);
+import { sendBatchNotification } from './util/notifications';
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
+
+// Sub Routers
+import donorRouter from './routes/donors';
+import userRouter from './routes/users';
+
+const MongoStore = mongo(session);
 
 // Create Express server
 const app = express();
@@ -25,8 +27,8 @@ const app = express();
 const mongoUrl = MONGODB_URI;
 mongoose.Promise = bluebird;
 
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true } ).then(
-    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ },
+mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
 ).catch(err => {
     console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
     // process.exit();
@@ -52,6 +54,7 @@ app.use(
     express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
 const fileupload = require('express-fileupload');
+
 app.use(fileupload());
 
 const checkJwt = jwt({
@@ -71,15 +74,11 @@ const checkJwt = jwt({
 
 // Routes
 app.post('/upload', imageController.postImage);
-app.post('/testpush', function(req, res) {
+app.post('/testpush', (req, res) => {
     res.send('testing push notification');
     // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]
     sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
 });
-
-// Sub Routers
-import donorRouter from './routes/donors';
-import userRouter from './routes/users';
 app.use('/api', donorRouter);
 app.use('/api', userRouter);
 
@@ -96,4 +95,3 @@ app.get('/test-auth0-security', checkJwt, (req, res) => {
 });
 
 export default app;
-

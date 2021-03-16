@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from 'express';
+import { Response, Request } from 'express';
 import { User } from '../models/User';
 
 type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
@@ -8,25 +8,22 @@ type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
  * @param userType string specifying userType either 'donor', 'volunteer', 'recipient', 'admin', or 'any'
  */
 const queryOnUserType = (userType: UserType) => {
-    if (userType == 'donor') {
-        return User.find({donorInfo:{$exists: true}});
+    if (userType === 'donor') {
+        return User.find({ donorInfo: { $exists: true } });
     }
-    if (userType == 'volunteer') {
-        return User.find({volunteerInfo:{$exists: true}});
+    if (userType === 'volunteer') {
+        return User.find({ volunteerInfo: { $exists: true } });
     }
-    if (userType == 'recipient') {
-        return User.find({recipient:{$eq: true}});
+    if (userType === 'recipient') {
+        return User.find({ recipient: { $eq: true } });
     }
-    if (userType == 'admin') {
-        return User.find({admin:{$eq: true}});
+    if (userType === 'admin') {
+        return User.find({ admin: { $eq: true } });
     }
-    if (userType == 'any') {
+    if (userType === 'any') {
         return User.find({});
     }
-    // This line would avoid errors if there is a typo, but it kinda seems like a
-    // security vulnerability so I'll leave it commented
-
-    // return User.find({});
+    throw new Error(`Invalid user type: ${userType}`);
 };
 
 /**
@@ -38,9 +35,9 @@ export const getPushTokens = (userType: UserType) => {
         queryOnUserType(userType).select('pushTokens').then(result => {
             const tokens: string[] = [];
             result.forEach((userDoc) => {
-               for (let i = 0; i < userDoc.pushTokens.length; i++) {
-                   tokens.push(userDoc.pushTokens[i]);
-               }
+                for (let i = 0; i < userDoc.pushTokens.length; i++) {
+                    tokens.push(userDoc.pushTokens[i]);
+                }
             });
             resolve(tokens);
         }).catch(error => {
