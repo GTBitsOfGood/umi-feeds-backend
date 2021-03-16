@@ -74,7 +74,7 @@ export const getDonations = (req: Request, res: Response) => {
 };
 
 /**
- * Creates a new donation, and then then notifies admins about this new donation. 
+ * Creates a new donation, and then then notifies admins about this new donation.
  * @route POST /donations
  * Request body:
  * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose.
