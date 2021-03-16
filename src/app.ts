@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
+import cors from 'cors';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
 
@@ -36,6 +37,7 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUni
 
 // Express configuration
 app.set('port', process.env.PORT || 3000);
+app.use(cors());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
