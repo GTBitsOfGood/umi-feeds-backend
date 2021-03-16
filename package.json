@@ -37,6 +37,7 @@
         "@azure/arm-storage": "^15.1.0",
         "@azure/ms-rest-nodeauth": "^3.0.6",
         "@azure/storage-blob": "^12.2.1",
+        "@types/cors": "^2.8.10",
         "async": "^3.2.0",
         "azure-storage": "^2.10.3",
         "bcrypt-nodejs": "^0.0.3",
