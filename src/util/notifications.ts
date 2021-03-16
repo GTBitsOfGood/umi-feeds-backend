@@ -82,7 +82,7 @@ const sendPushNotifications = (messages: ExpoPushMessage[]) => {
     })();
 };
 
-const sendBatchNotification = (title: string, body: string, expoPushTokens: ExpoPushToken[], data: object = {}) => {
+const sendBatchNotification = (title: string, body: string, expoPushTokens: ExpoPushToken[], data: Record<string, unknown> = {}) => {
     // Create the messages that you want to send to clients
     const messages: ExpoPushMessage[] = [];
     for (const pushToken of expoPushTokens) {

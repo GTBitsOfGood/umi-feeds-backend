@@ -30,9 +30,10 @@ export const postImage = (req: Request, res: Response) => {
             blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (err: Error) => {
                 if (err) {
                     console.error(`Error in createBlockBlobFromText: ${err}`);
-                    return res.status(500).send(String(err));
+                    res.status(500).send(String(err));
+                } else {
+                    res.send('File uploaded!');
                 }
-                res.send('File uploaded!');
             });
         }
     } catch (err) {

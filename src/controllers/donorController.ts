@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from 'express';
+import { Response, Request } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
 import * as userController from './userController';

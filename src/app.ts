@@ -1,7 +1,6 @@
 import express from 'express';
 import compression from 'compression'; // compresses requests
 import session from 'express-session';
-import bodyParser from 'body-parser';
 import lusca from 'lusca';
 import mongo from 'connect-mongo';
 import path from 'path';
@@ -9,7 +8,6 @@ import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
-import jwtAuthz from 'express-jwt-authz';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
 
