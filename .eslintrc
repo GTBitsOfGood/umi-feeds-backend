@@ -1,6 +1,7 @@
 {
   "parser": "@typescript-eslint/parser",
   "extends": [
+    "airbnb",
     "plugin:@typescript-eslint/recommended"
   ],
   "parserOptions": {
@@ -8,14 +9,6 @@
     "sourceType": "module"
   },
   "rules": {
-    "semi": [
-      "error",
-      "always"
-    ],
-    "quotes": [
-      "error",
-      "single"
-    ],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": 1,
     "@typescript-eslint/no-inferrable-types": [
@@ -26,6 +19,67 @@
     ],
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/ban-ts-ignore": "off"
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "indent": [
+      "error",
+      4
+    ],
+    "no-param-reassign": [
+      2,
+      {
+        "props": false
+      }
+    ],
+    "no-shadow": "off",
+    "max-len": [
+      "warn",
+      {
+        "code": 120,
+        "tabWidth": 4,
+        "comments": 120,
+        "ignoreComments": false,
+        "ignoreTrailingComments": true,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "only-multiline",
+        "objects": "only-multiline",
+        "imports": "only-multiline",
+        "exports": "only-multiline",
+        "functions": "never"
+      }
+    ],
+    "no-return-await": "error",
+    "object-curly-newline": "off",
+    "linebreak-style": "off",
+    "no-console": [
+      "warn",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
+    "no-use-before-define": "off",
+    "import/no-unresolved": "off",
+    "import/extensions": "off",
+    "import/prefer-default-export": "off",
+    "no-else-return": "off",
+    "global-require": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/ban-ts-comment": [
+      "warn",
+      {
+        "ts-ignore": "allow-with-description"
+      }
+    ],
+    "no-plusplus": "off"
   }
 }
