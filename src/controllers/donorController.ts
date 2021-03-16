@@ -85,10 +85,10 @@ export const getDonations = (req: Request, res: Response) => {
 export const postDonations = (req: Request, res: Response) => {
     const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
     try {
-        if (!req.files.descriptionImage && !jsonBody.description) {
+        if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
             res.status(400).json({
-                status: false,
-                message: 'No images attached to the key "descriptionImage" or a description in the stringified json body.',
+                success: false,
+                message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
             });
         } else {
             jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
