@@ -77,10 +77,10 @@ export const getDonations = (req: Request, res: Response) => {
  * Creates a new donation, and then then notifies admins about this new donation.
  * @route POST /donations
  * Request body:
- * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose.
+ * @param {string} req.body.json Stringified JSON of type DonationDocument (see Donation.ts). descriptionImages and foodImages can be omitted as they default to an empty array in Mongoose. Example: '{"donor":"602bf82713e73d625cc0d522","availability":{"startTime":"2021-03-16T07:59:48.476Z","endTime":"2021-03-17T07:59:48.476Z"}}'
  * @param {UploadedFile? | Array<UploadedFile>?} req.files.descriptionImage Images of a description of the food. Having either this or the "description" key in `req.body.json` is mandatory.
- * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional
- * etc.
+ * @param {UploadedFile? | Array<UploadedFile>?} req.files.foodImage Images of the food. Optional.
+ * In Postman, you would make a request with Body set to form-data. The descriptionImage or foodImage key would be of the File type, and then you'd have a json key with the type set to Text.
  */
 export const postDonations = (req: Request, res: Response) => {
     const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
@@ -91,11 +91,8 @@ export const postDonations = (req: Request, res: Response) => {
                 message: 'No images attached to the key "descriptionImage" or a description in the stringified json body.',
             });
         } else {
-            const descriptionUrls: string[] = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
-            const foodUrls: string[] = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
-
-            jsonBody.descriptionImages = descriptionUrls;
-            jsonBody.foodImages = foodUrls;
+            jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+            jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
             const donation = new Donation(jsonBody);
             donation.save()
                 .then(result => {
