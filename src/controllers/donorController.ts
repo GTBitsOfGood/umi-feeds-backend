@@ -1,7 +1,8 @@
 import { Response, Request } from 'express';
 import { Donor } from '../models/Donor';
 import { Donation } from '../models/Donation';
-
+import { UploadedFile } from 'express-fileupload';
+import { uploadFiles, uploadFile } from '../util/image'; 
 
 /**
  * Gets Donations
