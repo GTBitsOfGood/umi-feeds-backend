@@ -80,6 +80,13 @@
         "ts-ignore": "allow-with-description"
       }
     ],
-    "no-plusplus": "off"
+    "no-plusplus": "off",
+    "import/no-extraneous-dependencies": "warn",
+    "arrow-body-style": "off",
+    "arrow-parens": "off",
+    "no-restricted-syntax": "off",
+    "no-await-in-loop": "warn",
+    "no-continue": "off",
+    "guard-for-in": "warn"
   }
 }
