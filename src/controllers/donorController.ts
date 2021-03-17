@@ -12,7 +12,7 @@ import { sendBatchNotification } from '../util/notifications';
  * @route GET /donors
  */
 export const getDonors = (req: Request, res: Response) => {
-    User.find({donorInfo : { $exists: true }})
+    User.find({ donorInfo: { $exists: true } })
         .then(results => res.status(200).json({ donors: results }));
 };
 
@@ -42,14 +42,12 @@ export const postDonors = (req: Request, res: Response) => {
 export const modifyDonor = (req: Request, res: Response) => {
     const id = req.params.donor_id;
     return User.findByIdAndUpdate(id, req.body)
-        .then(result => { 
-            return res.status(200).json({ 
-                donor: result 
+        .then(result => {
+            return res.status(200).json({
+                donor: result
             });
         })
-        .catch((error: Error) => 
-            res.status(400).json({ message: error.message })
-        );
+        .catch((error: Error) => res.status(400).json({ message: error.message }));
 };
 
 /**
@@ -157,14 +155,12 @@ export const deleteDonation = (req: Request, res: Response) => {
 export const modifyDonation = (req: Request, res: Response) => {
     const id = req.params.donation_id;
     return Donation.findByIdAndUpdate(id, req.body)
-        .then(result => { 
-            return res.status(200).json({ 
-                donation: result 
+        .then(result => {
+            return res.status(200).json({
+                donation: result
             });
         })
-        .catch((error: Error) => 
-            res.status(400).json({ message: error.message })
-        );
+        .catch((error: Error) => res.status(400).json({ message: error.message }));
 };
 
 /**
