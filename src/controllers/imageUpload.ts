@@ -26,13 +26,14 @@ export const postImage = (req: Request, res: Response) => {
         } else {
             const imgRequest = req.files.image as UploadedFile;
             const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-            
+
             blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (err: Error) => {
                 if (err) {
                     console.error(`Error in createBlockBlobFromText: ${err}`);
-                    return res.status(500).send(String(err));
+                    res.status(500).send(String(err));
+                } else {
+                    res.send('File uploaded!');
                 }
-                res.send('File uploaded!');
             });
         }
     } catch (err) {

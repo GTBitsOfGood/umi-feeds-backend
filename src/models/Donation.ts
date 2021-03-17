@@ -27,7 +27,7 @@ const donationSchema = new Schema<DonationDocument>({
     },
     availability: {
         type: new Schema({
-            startTime: { 
+            startTime: {
                 type: Date,
                 required: true
             },
@@ -44,7 +44,6 @@ const donationSchema = new Schema<DonationDocument>({
     },
     description: {
         type: String,
-        required: true
     },
     descriptionImages: {
         type: [String],
@@ -55,8 +54,7 @@ const donationSchema = new Schema<DonationDocument>({
     foodImages: {
         type: [String],
         default: [],
-    }, 
+    },
 }, { timestamps: true });
 
 export const Donation: Model<DonationDocument> = mongoose.model<DonationDocument>('Donation', donationSchema);
-
