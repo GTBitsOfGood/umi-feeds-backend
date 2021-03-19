@@ -1,12 +1,12 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
+import jwt_decode from 'jwt-decode';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
-import jwt_decode from "jwt-decode";
 
 /**
  * Gets Donors
@@ -81,12 +81,12 @@ export const getDonations = (req: Request, res: Response) => {
  */
 export const postDonations = (req: Request, res: Response) => {
     const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
-    
+
     const payload:any = jwt_decode(req.headers.authorization);
     if (!payload) {
-        return res.status(400).json({ 
-            error: "Invalid ID token"
-        })
+        return res.status(400).json({
+            error: 'Invalid ID token'
+        });
     }
     User.findOne({ sub: { $eq: payload.sub } }).then(user => {
         jsonBody.donor = user._id;
@@ -94,7 +94,7 @@ export const postDonations = (req: Request, res: Response) => {
             if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
                 res.status(400).json({
                     success: false,
-                    message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.", 
+                    message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
                 });
             } else {
                 jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
@@ -111,7 +111,7 @@ export const postDonations = (req: Request, res: Response) => {
                             message: error.message
                         });
                     });
-    
+
                 // Notify admins about the new donation
                 User.findById(jsonBody.donor).then(result => {
                     userController.getPushTokens('admin').then((tokens: string[]) => {
@@ -128,8 +128,6 @@ export const postDonations = (req: Request, res: Response) => {
             message: error.message
         });
     });
-
-   
 };
 
 /**

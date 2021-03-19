@@ -16,7 +16,6 @@ export const checkJwt = jwt({
     algorithms: ['RS256']
 });
 
-
 export const userJwt = jwt({
     // Dynamically provide a signing key
     secret: jwksRsa.expressJwtSecret({
@@ -27,7 +26,7 @@ export const userJwt = jwt({
     }),
 
     // validate the audience and the issuer
-    //audience: 'https://test/',
+    // audience: 'https://test/',
     issuer: 'https://bog-dev.us.auth0.com/',
     algorithms: ['RS256']
 });
