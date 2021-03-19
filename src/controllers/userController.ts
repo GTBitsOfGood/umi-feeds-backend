@@ -1,6 +1,7 @@
 import { Response, Request } from 'express';
+// eslint-disable-next-line camelcase
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { User } from '../models/User';
-import jwt_decode, {JwtPayload} from "jwt-decode";
 
 type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
 
@@ -92,7 +93,7 @@ export const postToken = (req: Request, res: Response) => {
     User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const tokens = user.pushTokens;
         let hasToken = false;
-        for (let i = 0; i < tokens.length; i ++) {
+        for (let i = 0; i < tokens.length; i++) {
             if (tokens[i] === req.body.token) {
                 hasToken = true;
                 break;
