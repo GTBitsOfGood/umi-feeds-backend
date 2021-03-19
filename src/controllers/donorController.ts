@@ -1,27 +1,20 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 import { Donor } from '../models/Donor';
+import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
 
 /**
- * Gets Donations
+ * Gets Donors
  * @route GET /donors
  */
 export const getDonors = (req: Request, res: Response) => {
-    Donor.find()
-        .then(results => {
-            return res.status(200).json({
-                donors: results,
-            });
-        })
-        .catch(error => {
-            return res.status(500).json({
-                message: error.message
-            });
-        });
+    User.find({ donorInfo: { $exists: true } })
+        .then(results => res.status(200).json({ donors: results }))
+        .catch((error: Error) => res.status(500).json({ success: false, message: error.message }));
 };
 
 /**
@@ -29,7 +22,7 @@ export const getDonors = (req: Request, res: Response) => {
  * @route POST /donors
  */
 export const postDonors = (req: Request, res: Response) => {
-    const donor = new Donor(req.body);
+    const donor = new User(req.body);
     return donor.save()
         .then(result => {
             return res.status(201).json({
@@ -48,11 +41,14 @@ export const postDonors = (req: Request, res: Response) => {
  * @route PUT /donors/:donor_id
  */
 export const modifyDonor = (req: Request, res: Response) => {
-    const id = req.params.donor;
-    const updatedDonor = req.params;
-    return Donor.findByIdAndUpdate(id, updatedDonor)
-        .then(result => res.status(200).json({ success: true }))
-        .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
+    const id = req.params.donor_id;
+    return User.findByIdAndUpdate(id, req.body)
+        .then(result => {
+            return res.status(200).json({
+                donor: result
+            });
+        })
+        .catch((error: Error) => res.status(400).json({ message: error.message }));
 };
 
 /**
@@ -60,7 +56,7 @@ export const modifyDonor = (req: Request, res: Response) => {
  * @route GET /donations
  */
 export const getDonations = (req: Request, res: Response) => {
-    Donation.find().populate('donor', '_id name latitude longitude')
+    Donation.find().populate('user', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
         .then(results => {
             return res.status(200).json({
                 donations: results,
@@ -107,7 +103,7 @@ export const postDonations = (req: Request, res: Response) => {
                 });
 
             // Notify admins about the new donation
-            Donor.findById(jsonBody.donor).then(result => {
+            User.findById(jsonBody.donor).then(result => {
                 userController.getPushTokens('admin').then((tokens: string[]) => {
                     sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
                 });
@@ -129,7 +125,7 @@ export const availPickup = (req: Request, res: Response) => {
         'availability.startTime': { $lte: new Date() },
         'availability.endTime': { $gte: new Date() }
     })
-        .populate('donor', '_id name latitude longitude')
+        .populate('user', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
         .then(result => {
             return res.status(200).json({
                 donation: result
@@ -159,10 +155,13 @@ export const deleteDonation = (req: Request, res: Response) => {
  */
 export const modifyDonation = (req: Request, res: Response) => {
     const id = req.params.donation_id;
-    const updatedDonation = req.params;
-    return Donation.findByIdAndUpdate(id, updatedDonation)
-        .then(result => res.status(200).json({ success: true }))
-        .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
+    return Donation.findByIdAndUpdate(id, req.body)
+        .then(result => {
+            return res.status(200).json({
+                donation: result
+            });
+        })
+        .catch((error: Error) => res.status(400).json({ message: error.message }));
 };
 
 /**
@@ -175,3 +174,8 @@ export const userDonations = (req: Request, res: Response) => {
         .then(result => res.status(200).json({ success: true, donations: result }))
         .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
 };
+
+/**
+ * Gets details of a donation based on its id
+ *
+ */

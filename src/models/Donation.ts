@@ -1,8 +1,8 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { DonorDocument } from './Donor';
+import { UserDocument } from './User';
 
 export interface DonationDocument extends Document {
-    donor: DonorDocument['_id'];
+    donor: UserDocument['_id'];
     availability: {
         startTime: Date;
         endTime: Date;
@@ -22,7 +22,7 @@ export interface DonationDocument extends Document {
 const donationSchema = new Schema<DonationDocument>({
     donor: {
         type: Schema.Types.ObjectId,
-        ref: 'Donor',
+        ref: 'User',
         required: true
     },
     availability: {
