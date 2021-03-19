@@ -125,7 +125,7 @@ export const availPickup = (req: Request, res: Response) => {
         'availability.startTime': { $lte: new Date() },
         'availability.endTime': { $gte: new Date() }
     })
-        .populate('donor', '_id name latitude longitude')
+        .populate('user', '_id donorInfo.name donorInfo.address')
         .then(result => {
             return res.status(200).json({
                 donation: result
