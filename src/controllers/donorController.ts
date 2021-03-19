@@ -58,6 +58,7 @@ export const modifyDonor = (req: Request, res: Response) => {
 export const getDonations = (req: Request, res: Response) => {
     Donation.find()
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+        .populate('volunteer', '_id volunteerInfo.phone')
         .then(results => {
             return res.status(200).json({
                 donations: results,
