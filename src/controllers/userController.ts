@@ -99,7 +99,7 @@ export const postToken = (req: Request, res: Response) => {
                 break;
             }
         }
-        if (!hasToken) {
+        if (!hasToken && req.body.token !== '') {
             tokens.push(req.body.token);
         }
         user.save().then(result => {
