@@ -9,7 +9,7 @@ import bluebird from 'bluebird';
 import cors from 'cors';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
-import { checkJwt } from "./util/auth";
+import { checkJwt } from './util/auth';
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
