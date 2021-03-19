@@ -84,7 +84,7 @@ export const postDonations = (req: Request, res: Response) => {
 
     const payload:any = jwt_decode(req.headers.authorization);
     if (!payload) {
-        return res.status(400).json({
+        res.status(400).json({
             error: 'Invalid ID token'
         });
     }
