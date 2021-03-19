@@ -6,11 +6,10 @@ import mongo from 'connect-mongo';
 import path from 'path';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
-import jwt from 'express-jwt';
-import jwksRsa from 'jwks-rsa';
 import cors from 'cors';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
+import { checkJwt } from "./util/auth";
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
@@ -59,21 +58,6 @@ const fileupload = require('express-fileupload');
 
 app.use(fileupload());
 
-const checkJwt = jwt({
-    // Dynamically provide a signing key
-    secret: jwksRsa.expressJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: 'https://bog-dev.us.auth0.com/.well-known/jwks.json'
-    }),
-
-    // validate the audience and the issuer
-    audience: 'https://test/',
-    issuer: 'https://bog-dev.us.auth0.com/',
-    algorithms: ['RS256']
-});
-
 // Routes
 app.post('/upload', imageController.postImage);
 app.post('/testpush', (req, res) => {
@@ -93,6 +77,7 @@ app.use('/api', userRouter);
  * it from that Auth0 dashboard page.
  */
 app.get('/test-auth0-security', checkJwt, (req, res) => {
+    console.log(req);
     res.send('Secured');
 });
 

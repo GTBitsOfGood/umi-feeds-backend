@@ -1,5 +1,6 @@
 import { Response, Request } from 'express';
 import { User } from '../models/User';
+import jwt_decode, {JwtPayload} from "jwt-decode";
 
 type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
 
@@ -81,4 +82,37 @@ export const postUsers = (req: Request, res: Response) => {
                 message: error.message
             });
         });
+};
+
+/**
+ * Posts Token to add token to User
+ * @route POST /token
+ */
+export const postToken = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const tokens = user.pushTokens;
+        let hasToken = false;
+        for (const token in tokens) {
+            if (token === req.body.token) {
+                hasToken = true;
+                break;
+            }
+        }
+        if (!hasToken) {
+            tokens.push(req.body.token);
+        }
+        user.save().then(result => {
+            return res.status(201).json({
+                status: 'success',
+            });
+        }).catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
+        });
+    }).catch(error => {
+        return res.status(500).json({
+            message: error.message
+        });
+    });
 };
