@@ -13,7 +13,8 @@ import { sendBatchNotification } from '../util/notifications';
  */
 export const getDonors = (req: Request, res: Response) => {
     User.find({ donorInfo: { $exists: true } })
-        .then(results => res.status(200).json({ donors: results }));
+        .then(results => res.status(200).json({ donors: results }))
+        .catch((error: Error) => res.status(500).json({ success: false, message: error.message }));
 };
 
 /**
@@ -55,7 +56,7 @@ export const modifyDonor = (req: Request, res: Response) => {
  * @route GET /donations
  */
 export const getDonations = (req: Request, res: Response) => {
-    Donation.find().populate('donor', '_id name latitude longitude')
+    Donation.find().populate('user', '_id donorInfo.name donorInfo.address')
         .then(results => {
             return res.status(200).json({
                 donations: results,
