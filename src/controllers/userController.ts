@@ -1,4 +1,6 @@
 import { Response, Request } from 'express';
+// eslint-disable-next-line camelcase
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { User } from '../models/User';
 
 type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
@@ -81,4 +83,37 @@ export const postUsers = (req: Request, res: Response) => {
                 message: error.message
             });
         });
+};
+
+/**
+ * Posts Token to add token to User
+ * @route POST /token
+ */
+export const postToken = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const tokens = user.pushTokens;
+        let hasToken = false;
+        for (let i = 0; i < tokens.length; i++) {
+            if (tokens[i] === req.body.token) {
+                hasToken = true;
+                break;
+            }
+        }
+        if (!hasToken && req.body.token !== '') {
+            tokens.push(req.body.token);
+        }
+        user.save().then(result => {
+            return res.status(201).json({
+                status: 'success',
+            });
+        }).catch(error => {
+            return res.status(500).json({
+                message: error.message
+            });
+        });
+    }).catch(error => {
+        return res.status(500).json({
+            message: error.message
+        });
+    });
 };

@@ -18,6 +18,7 @@ export type UserDocument = mongoose.Document & {
     };
     recipient: boolean;
     admin: boolean; // in reality, admin access will be based on the Auth0 token, not this attribute
+    sub: string;
 };
 
 const userSchema = new mongoose.Schema<UserDocument>({
@@ -42,7 +43,8 @@ const userSchema = new mongoose.Schema<UserDocument>({
         required: false,
     },
     recipient: { type: Boolean, required: true },
-    admin: { type: Boolean, required: true } // in reality, admin access will be based on the Auth0 token, not this attribute
+    admin: { type: Boolean, required: true }, // in reality, admin access will be based on the Auth0 token, not this attribute
+    sub: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
 export const User = mongoose.model<UserDocument>('User', userSchema);
