@@ -92,8 +92,8 @@ export const postToken = (req: Request, res: Response) => {
     User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const tokens = user.pushTokens;
         let hasToken = false;
-        for (const token in tokens) {
-            if (token === req.body.token) {
+        for (let i = 0; i < tokens.length; i ++) {
+            if (tokens[i] === req.body.token) {
                 hasToken = true;
                 break;
             }
