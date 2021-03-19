@@ -56,7 +56,8 @@ export const modifyDonor = (req: Request, res: Response) => {
  * @route GET /donations
  */
 export const getDonations = (req: Request, res: Response) => {
-    Donation.find().populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+    Donation.find()
+        .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
         .then(results => {
             return res.status(200).json({
                 donations: results,
@@ -171,11 +172,19 @@ export const modifyDonation = (req: Request, res: Response) => {
 export const userDonations = (req: Request, res: Response) => {
     const id = req.params.donor_id;
     return Donation.find({ donor: id })
-        .then(result => res.status(200).json({ success: true, donations: result }))
+        .then(result => res.status(200).json({ success: true, donation: result }))
         .catch((error: Error) => res.status(400).json({ success: false, message: error.message }));
 };
 
 /**
  * Gets details of a donation based on its id
- *
+ * @route GET /donations/:donation_id
  */
+export const getDonationDetails = (req: Request, res: Response) => {
+    const id = req.params.donation_id;
+    return Donation.findById(id)
+        .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+        .populate('volunteer', '_id volunteerInfo.phone')
+        .then(result => { return res.status(200).json({ donation: result }); })
+        .catch((error: Error) => res.status(400).json({ message: error.message }));
+};
