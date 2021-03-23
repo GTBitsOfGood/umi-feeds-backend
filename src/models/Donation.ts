@@ -1,8 +1,8 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { DonorDocument } from './Donor';
+import { UserDocument } from './User';
 
 export interface DonationDocument extends Document {
-    donor: DonorDocument['_id'];
+    donor: UserDocument['_id'];
     availability: {
         startTime: Date;
         endTime: Date;
@@ -22,21 +22,18 @@ export interface DonationDocument extends Document {
 const donationSchema = new Schema<DonationDocument>({
     donor: {
         type: Schema.Types.ObjectId,
-        ref: 'Donor',
+        ref: 'User',
         required: true
     },
     availability: {
-        type: new Schema({
-            startTime: { 
-                type: Date,
-                required: true
-            },
-            endTime: {
-                type: Date,
-                required: true
-            }
-        }),
-        required: true
+        startTime: {
+            type: Date,
+            required: true
+        },
+        endTime: {
+            type: Date,
+            required: true
+        }
     },
     pickup: {
         pickupTime: Date,
@@ -44,7 +41,6 @@ const donationSchema = new Schema<DonationDocument>({
     },
     description: {
         type: String,
-        required: true
     },
     descriptionImages: {
         type: [String],
@@ -55,8 +51,7 @@ const donationSchema = new Schema<DonationDocument>({
     foodImages: {
         type: [String],
         default: [],
-    }, 
+    },
 }, { timestamps: true });
 
 export const Donation: Model<DonationDocument> = mongoose.model<DonationDocument>('Donation', donationSchema);
-
