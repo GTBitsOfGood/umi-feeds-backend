@@ -14,7 +14,7 @@ import jwksRsa from 'jwks-rsa';
 import jwtAuthz from 'express-jwt-authz';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import {sendBatchNotification} from './util/notifications';
-const { MongoMemoryServer } = require('mongodb-memory-server');
+import MongoMemoryServer from 'mongodb-memory-server';
 
 const MongoStore = mongo(session);
 
