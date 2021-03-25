@@ -39,11 +39,11 @@ if (ENVIRONMENT !== 'test') {
 } else if (ENVIRONMENT === 'test') {
 
     // Connect to mongo memory server for testing
-    const mongoServer = new MongoMemoryServer(); // in memory server
+    // const mongoServer = new MongoMemoryServer(); // in memory server
 
-    mongoServer.getUri().then((mongoUri: string) => {
-        mongoose.connect(mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
-    });
+    // mongoServer.getUri().then((mongoUri: string) => {
+    //     mongoose.connect(mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
+    // });
 }
 
 // Express configuration

@@ -55,6 +55,7 @@
         "jwks-rsa": "^1.12.2",
         "lodash": "^4.17.20",
         "lusca": "^1.6.1",
+        "mongodb-memory-server": "^6.9.6",
         "mongoose": "^5.11.15",
         "nodemailer": "^6.4.17",
         "passport": "^0.4.1",

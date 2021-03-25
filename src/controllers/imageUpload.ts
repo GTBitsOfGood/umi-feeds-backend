@@ -36,7 +36,7 @@ export const postImage = (req: Request, res: Response) => {
                 uniqueID = uid(11);
                 index = imgRequest.name.lastIndexOf('.');
                 blobName = imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index);
-                unique = true;
+                // unique = true;
 
                 blobSVC.listBlobsSegmentedWithPrefix(containerName, blobName, null, {
                     delimiter: '',
@@ -44,7 +44,7 @@ export const postImage = (req: Request, res: Response) => {
                 }, function(error, result) {
                     if (!error) {
                         if (result.entries.length <= 0) {
-                            res.send('File error not unique.');
+
                             unique = true;
                         }
                     }
