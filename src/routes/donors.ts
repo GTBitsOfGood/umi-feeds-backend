@@ -1,11 +1,12 @@
 import express from 'express';
 import * as donorController from '../controllers/donorController';
+import { userJwt } from '../util/auth';
 
 const router = express.Router();
 router.get('/donors', donorController.getDonors);
 router.post('/donors', donorController.postDonors);
 router.get('/donations', donorController.getDonations);
-router.post('/donations', donorController.postDonations);
+router.post('/donations', userJwt, donorController.postDonations);
 router.delete('/donations/:donation_id', donorController.deleteDonation);
 router.get('/available-pickup', donorController.availPickup);
 router.put('/donations/:donation_id', donorController.modifyDonation);
