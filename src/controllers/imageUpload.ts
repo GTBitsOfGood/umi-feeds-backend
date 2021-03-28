@@ -27,20 +27,26 @@ export const postImage = (req: Request, res: Response) => {
         } else {
             const imgRequest = req.files.image as UploadedFile;
             const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
+            // let unique = false;
             const uniqueID: string = uid(11);
-            const index: number = imgRequest.name.lastIndexOf('.');;
+            const index: number = imgRequest.name.lastIndexOf('.');
             const blobName: string = imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index);
 
-                // blobSVC.listBlobsSegmentedWithPrefix(containerName, blobName, null, {
-                //     delimiter: '',
-                //     maxResults: 1
-                // }, function(error, result) {
-                //     if (!error) {
-                //         if (result.entries.length <= 0) {
-                //             unique = true;
-                //         }
-                //     }
-                // });
+            // while (!unique) {
+            //     uniqueID = uid(11);
+            //     index = imgRequest.name.lastIndexOf('.');
+            //     blobName = imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index);
+            //     unique = true;
+
+            //     blobSVC.doesBlobExist(containerName, blobName, function(error, result) {
+            //         if (!error) {
+            //           if (result.exists) {
+            //             unique = true;
+            //           } else {
+            //           }
+            //         }
+            //       });
+            // }
             
             blobSVC.createBlockBlobFromText(containerName, blobName, imgRequest.data, (err: Error) => {
                 
