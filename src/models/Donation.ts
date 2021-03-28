@@ -3,6 +3,7 @@ import { UserDocument } from './User';
 
 export interface DonationDocument extends Document {
     donor: UserDocument['_id'];
+    volunteer?: UserDocument['_id'];
     availability: {
         startTime: Date;
         endTime: Date;
@@ -25,18 +26,19 @@ const donationSchema = new Schema<DonationDocument>({
         ref: 'User',
         required: true
     },
+    volunteer: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
     availability: {
-        type: new Schema({
-            startTime: {
-                type: Date,
-                required: true
-            },
-            endTime: {
-                type: Date,
-                required: true
-            }
-        }),
-        required: true
+        startTime: {
+            type: Date,
+            required: true
+        },
+        endTime: {
+            type: Date,
+            required: true
+        }
     },
     pickup: {
         pickupTime: Date,

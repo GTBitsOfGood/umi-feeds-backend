@@ -57,7 +57,9 @@ export const modifyDonor = (req: Request, res: Response) => {
  * @route GET /donations
  */
 export const getDonations = (req: Request, res: Response) => {
-    Donation.find().populate('user', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+    Donation.find()
+        .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+        .populate('volunteer', '_id volunteerInfo.phone')
         .then(results => {
             return res.status(200).json({
                 donations: results,
@@ -141,7 +143,7 @@ export const availPickup = (req: Request, res: Response) => {
         'availability.startTime': { $lte: new Date() },
         'availability.endTime': { $gte: new Date() }
     })
-        .populate('user', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+        .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
         .then(result => {
             return res.status(200).json({
                 donation: result
@@ -193,5 +195,13 @@ export const userDonations = (req: Request, res: Response) => {
 
 /**
  * Gets details of a donation based on its id
- *
+ * @route GET /donations/:donation_id
  */
+export const getDonationDetails = (req: Request, res: Response) => {
+    const id = req.params.donation_id;
+    return Donation.findById(id)
+        .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
+        .populate('volunteer', '_id volunteerInfo.phone')
+        .then(result => { return res.status(200).json({ donation: result }); })
+        .catch((error: Error) => res.status(400).json({ message: error.message }));
+};

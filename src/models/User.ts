@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 export type UserDocument = mongoose.Document & {
     name: string;
@@ -25,22 +25,23 @@ const userSchema = new mongoose.Schema<UserDocument>({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true }, // later down the line, we will make this optional for recipients
     pushTokens: { type: [String], required: true }, // expo push tokens
-    donorInfo: { type: new Schema({
-        // all of these attributes are about the business
-        // these attributes are required if donorInfo is present
-        name: { type: String, required: true },
-        phone: { type: String, required: true },
-        address: { type: String, required: true },
-        longitude: { type: Number, required: true },
-        latitude: { type: Number, required: true },
-    }),
-    required: false,
+    donorInfo: {
+        type: {
+            // all of these attributes are about the business
+            // these attributes are required if donorInfo is present
+            name: { type: String, required: true },
+            phone: { type: String, required: true },
+            address: { type: String, required: true },
+            longitude: { type: Number, required: true },
+            latitude: { type: Number, required: true },
+        },
+        required: false
     },
     volunteerInfo: {
-        type: new Schema({
+        type: {
             phone: { type: String, required: true }
-        }),
-        required: false,
+        },
+        required: false
     },
     recipient: { type: Boolean, required: true },
     admin: { type: Boolean, required: true }, // in reality, admin access will be based on the Auth0 token, not this attribute
