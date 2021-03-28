@@ -82,11 +82,12 @@ export const getDonations = (req: Request, res: Response) => {
 export const postDonations = (req: Request, res: Response) => {
     const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
 
-    const payload:any = jwt_decode(req.headers.authorization);
+    const payload: any = jwt_decode(req.headers.authorization);
     if (!payload) {
         res.status(400).json({
             error: 'Invalid ID token'
         });
+        return;
     }
     User.findOne({ sub: { $eq: payload.sub } }).then(user => {
         jsonBody.donor = user._id;
