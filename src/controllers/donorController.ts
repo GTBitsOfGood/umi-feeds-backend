@@ -1,6 +1,6 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
-import jwt_decode from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 import { result } from 'lodash';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
@@ -59,16 +59,16 @@ export const modifyDonor = (req: Request, res: Response) => {
  */
 export const getDonorDetails = (req: Request, res: Response) => {
     // authenticating endpoint
-    const payload: unknown = jwt_decode(req.headers.authorization);
+    const payload: unknown = jwtDecode(req.headers.authorization);
     if (!payload) {
         return res.status(400).json({ error: 'Invalid ID token' });
     }
 
     const id = req.params.donor_id;
-    User.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
-        .then(result => { return res.status(200).json({ donor: result }); })
+    return User.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
+        .then(result => { res.status(200).json({ donor: result }); })
         .catch((error: Error) => {
-            return res.status(400).json({ message: error.message });
+            res.status(400).json({ message: error.message });
         });
 };
 
