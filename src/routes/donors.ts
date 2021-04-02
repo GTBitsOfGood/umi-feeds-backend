@@ -12,5 +12,6 @@ router.put('/donations/:donation_id', donorController.modifyDonation);
 router.put('/donors/:donor_id', donorController.modifyDonation);
 router.get('/donors/:donor_id/donations', donorController.userDonations);
 router.get('/donations/:donation_id', donorController.getDonationDetails);
+router.get('/donors/:donor_id', donorController.getDonorDetails);
 
 export default router;

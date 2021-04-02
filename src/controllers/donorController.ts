@@ -1,5 +1,7 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
+import jwt_decode from 'jwt-decode';
+import { result } from 'lodash';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
@@ -49,6 +51,25 @@ export const modifyDonor = (req: Request, res: Response) => {
             });
         })
         .catch((error: Error) => res.status(400).json({ message: error.message }));
+};
+
+/**
+ * Gets details of a donor based on its id
+ * @route GET /donors/:donor_id
+ */
+export const getDonorDetails = (req: Request, res: Response) => {
+    // authenticating endpoint
+    const payload: unknown = jwt_decode(req.headers.authorization);
+    if (!payload) {
+        return res.status(400).json({ error: 'Invalid ID token' });
+    }
+
+    const id = req.params.donor_id;
+    User.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
+        .then(result => { return res.status(200).json({ donor: result }); })
+        .catch((error: Error) => {
+            return res.status(400).json({ message: error.message });
+        });
 };
 
 /**
