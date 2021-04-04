@@ -97,15 +97,22 @@ describe('POST /api/donations with no body', () => {
     });
 });
 
-// describe('POST /api/donations with valid body', () => {
-//     it('should return 201 Created', () => {
-//         return request(app).post('/api/donations')
-//             .send({'donor': '602bf82713e73d625cc0d522'})
-//             .send({'availability': { 'startTime': '2012-04-21T18:25:43-05:00', 'endTime': '2019-04-21T18:25:43-05:00' },})
-//             .send({'description': 'Antique Impossible Burgers'})
-//             .expect(201);
-//     });
-// });
+/*
+// TODO: one issue is that on the latest development commit, creating a donation requires a valid Auth0 token. Another issue si that it expects a multipart/form-data request.
+describe('POST /api/donations with valid body', () => {
+    it('should return 201 Created', () => {
+        return request(app).post('/api/donations')
+            .send({
+                donor: donorID,
+                availability: {
+                    startTime: '2012-04-21T18:25:43-05:00', endTime: '2019-04-21T18:25:43-05:00'
+                },
+                description: 'Antique Impossible Burgers'
+            })
+            .expect(201);
+    });
+});
+*/
 
 describe('DELETE /api/donations/asdf', () => {
     it('should return 400 Bad Request', () => {
