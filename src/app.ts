@@ -7,10 +7,10 @@ import path from 'path';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import cors from 'cors';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
 import { checkJwt } from './util/auth';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
