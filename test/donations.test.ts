@@ -1,8 +1,8 @@
 import request from 'supertest';
 import app from '../src/app';
-import { getDonors } from '../src/controllers/donorController'
+import { getDonors } from '../src/controllers/donorController';
 
-let donorID: String = null;
+let donorID: string | null = null;
 
 describe('GET /api/donors', () => {
     it('should return 200 OK', () => {
@@ -17,29 +17,55 @@ describe('POST /api/donors with no body', () => {
     });
 });
 
-
-async function createDonor() {
-    describe('POST /api/donors with valid body', () => {
-        it('should return 201 Created', () => {
-            return request(app).post('/api/donors')
-            .send({
-                'name': 'Slutty Vegan 2.0',
-                'latitude': '43.142',
-                'longitude': '-85.049',
-                'address': '1542 Ralph David Abernathy Blvd SW, Atlanta, GA 30310',
-                'phoneNumber': '8554397588' 
-            })    
-            .expect(201);
-        });
-    });
-}
-
 beforeAll(async (done) => {
-    await createDonor();
-    // donorID = getDonors();
+    request(app)
+        .post('/api/donors')
+        .send({
+            name: 'Pinky Cole',
+            email: 'slutty2@sluttyveganatl.com',
+            pushTokens: ['ExponentPushToken[EXAMPLE]'],
+            donorInfo: {
+                name: 'Slutty Vegan',
+                phone: '8554397588',
+                latitude: '43.142',
+                longitude: '-85.049',
+                address: '1542 Ralph David Abernathy Blvd SW, Atlanta, GA 30310',
+            },
+            recipient: false,
+            admin: false,
+            sub: '123456'
+        })
+        .expect(201)
+        .end((err, res) => {
+            if (err) return done(err);
+            donorID = res.body.donor._id;
+            console.log('hello hello!');
+            return done();
+        });
     done();
 });
 
+describe('POST /api/donors with valid body', () => {
+    it('should return 201 Created', () => {
+        return request(app).post('/api/donors')
+            .send({
+                name: 'Pinky Cole',
+                email: 'slutty@sluttyveganatl.com',
+                pushTokens: ['ExponentPushToken[EXAMPLE]'],
+                donorInfo: {
+                    name: 'Slutty Vegan',
+                    phone: '8554397588',
+                    latitude: '43.142',
+                    longitude: '-85.049',
+                    address: '1542 Ralph David Abernathy Blvd SW, Atlanta, GA 30310',
+                },
+                recipient: false,
+                admin: false,
+                sub: '12345'
+            })
+            .expect(201);
+    });
+});
 
 describe('GET /api/donations', () => {
     it('should return 200 OK', () => {
@@ -62,7 +88,6 @@ describe('GET /api/available-pickup and have donations in correct time frame', (
     });
 
     // Perform check on returned donations to see if current time is within the donations' time frames
-
 });
 
 describe('POST /api/donations with no body', () => {
