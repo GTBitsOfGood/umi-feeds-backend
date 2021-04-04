@@ -30,7 +30,7 @@ export const postImage = (req: Request, res: Response) => {
             // let unique = false;
             const uniqueID: string = uid(11);
             const index: number = imgRequest.name.lastIndexOf('.');
-            const blobName: string = imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index);
+            const blobName: string = (imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index));
 
             // while (!unique) {
             //     uniqueID = uid(11);
@@ -47,9 +47,8 @@ export const postImage = (req: Request, res: Response) => {
             //         }
             //       });
             // }
-            
+
             blobSVC.createBlockBlobFromText(containerName, blobName, imgRequest.data, (err: Error) => {
-                
                 if (err) {
                     console.error(`Error in createBlockBlobFromText: ${err}`);
                     res.status(500).send(String(err));

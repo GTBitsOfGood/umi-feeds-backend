@@ -1,6 +1,5 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
-import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';

@@ -38,7 +38,7 @@ beforeAll(async (done) => {
         .expect(201)
         .end((err, res) => {
             if (err) return done(err);
-            donorID = res.body.donor._id;
+            donorID = res.body.donor.id;
             console.log('hello hello!');
             return done();
         });
