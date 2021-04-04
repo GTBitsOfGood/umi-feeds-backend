@@ -46,7 +46,7 @@ if (ENVIRONMENT !== 'test') {
         ).catch(err => {
             // console.log(`Mock MongoDB connection error. Please make sure MongoDB is running. ${err}`);
             // process.exit();
-        });;
+        });
     });
 }
 
@@ -64,7 +64,7 @@ app.use(session({
         url: mongoUrl,
         autoReconnect: true
     })
-}))
+}));
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
 app.use(

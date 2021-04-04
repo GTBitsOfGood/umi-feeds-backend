@@ -36,7 +36,8 @@ export function uploadFile(file: UploadedFile): string {
     const imgRequest = file as UploadedFile;
     const uniqueID: string = uid(11);
     const index: number = imgRequest.name.lastIndexOf('.');
-    const blobName: string = imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index);
+    let blobName: string = imgRequest.name.substring(0, index)
+    blobName.concat('_', uniqueID, imgRequest.name.substring(index))
 
     blobSVC.createBlockBlobFromText(containerName, blobName, imgRequest.data, (error: Error) => {
         if (error) {

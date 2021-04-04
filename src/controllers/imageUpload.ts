@@ -30,7 +30,8 @@ export const postImage = (req: Request, res: Response) => {
             // let unique = false;
             const uniqueID: string = uid(11);
             const index: number = imgRequest.name.lastIndexOf('.');
-            const blobName: string = (imgRequest.name.substring(0, index) + '_' + uniqueID + imgRequest.name.substring(index));
+            let blobName: string = imgRequest.name.substring(0, index);
+            blobName = blobName.concat('_', uniqueID, imgRequest.name.substring(index))
 
             // while (!unique) {
             //     uniqueID = uid(11);
