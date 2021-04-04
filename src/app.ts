@@ -10,7 +10,7 @@ import cors from 'cors';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
 import { checkJwt } from './util/auth';
-import MongoMemoryServer from 'mongodb-memory-server';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
@@ -39,11 +39,16 @@ if (ENVIRONMENT !== 'test') {
 } else if (ENVIRONMENT === 'test') {
 
     // Connect to mongo memory server for testing
-    // const mongoServer = new MongoMemoryServer(); // in memory server
+    const mongoServer = new MongoMemoryServer(); // in memory server
 
-    // mongoServer.getUri().then((mongoUri: string) => {
-    //     mongoose.connect(mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
-    // });
+    mongoServer.getUri().then((mongoUri: string) => {
+        mongoose.connect(mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+            () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ },
+        ).catch(err => {
+            console.log(`Mock MongoDB connection error. Please make sure MongoDB is running. ${err}`);
+            // process.exit();
+        });;
+    });
 }
 
 // Express configuration

@@ -1,7 +1,8 @@
 import request from 'supertest';
 import app from '../src/app';
+import { getDonors } from '../src/controllers/donorController'
 
-let donorID = null;
+let donorID: String = null;
 
 describe('GET /api/donors', () => {
     it('should return 200 OK', () => {
@@ -34,7 +35,8 @@ async function createDonor() {
 }
 
 beforeAll(async (done) => {
-    donorID = await createDonor();
+    await createDonor();
+    // donorID = getDonors();
     done();
 });
 
@@ -70,15 +72,15 @@ describe('POST /api/donations with no body', () => {
     });
 });
 
-describe('POST /api/donations with valid body', () => {
-    it('should return 201 Created', () => {
-        return request(app).post('/api/donations')
-            .send({'donor': '602bf82713e73d625cc0d522'})
-            .send({'availability': { 'startTime': '2012-04-21T18:25:43-05:00', 'endTime': '2019-04-21T18:25:43-05:00' },})
-            .send({'description': 'Antique Impossible Burgers'})
-            .expect(201);
-    });
-});
+// describe('POST /api/donations with valid body', () => {
+//     it('should return 201 Created', () => {
+//         return request(app).post('/api/donations')
+//             .send({'donor': '602bf82713e73d625cc0d522'})
+//             .send({'availability': { 'startTime': '2012-04-21T18:25:43-05:00', 'endTime': '2019-04-21T18:25:43-05:00' },})
+//             .send({'description': 'Antique Impossible Burgers'})
+//             .expect(201);
+//     });
+// });
 
 describe('DELETE /api/donations/asdf', () => {
     it('should return 400 Bad Request', () => {
