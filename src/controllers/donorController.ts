@@ -1,5 +1,7 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
+import jwt_decode from 'jwt-decode';
+import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
@@ -81,39 +83,54 @@ export const getDonations = (req: Request, res: Response) => {
  */
 export const postDonations = (req: Request, res: Response) => {
     const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
-    try {
-        if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
-            res.status(400).json({
-                success: false,
-                message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
-            });
-        } else {
-            jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
-            jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
-            const donation = new Donation(jsonBody);
-            donation.save()
-                .then(result => {
-                    res.status(201).json({
-                        donation: result
-                    });
-                })
-                .catch(error => {
-                    res.status(500).json({
-                        message: error.message
-                    });
-                });
 
-            // Notify admins about the new donation
-            User.findById(jsonBody.donor).then(result => {
-                userController.getPushTokens('admin').then((tokens: string[]) => {
-                    sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
-                });
-            });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+    const payload: any = jwt_decode(req.headers.authorization);
+    if (!payload) {
+        res.status(400).json({
+            error: 'Invalid ID token'
+        });
+        return;
     }
+    User.findOne({ sub: { $eq: payload.sub } }).then(user => {
+        jsonBody.donor = user._id;
+        try {
+            if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
+                res.status(400).json({
+                    success: false,
+                    message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
+                });
+            } else {
+                jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+                jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
+                const donation = new Donation(jsonBody);
+                donation.save()
+                    .then(result => {
+                        res.status(201).json({
+                            donation: result
+                        });
+                    })
+                    .catch(error => {
+                        res.status(500).json({
+                            message: error.message
+                        });
+                    });
+
+                // Notify admins about the new donation
+                User.findById(jsonBody.donor).then(result => {
+                    userController.getPushTokens('admin').then((tokens: string[]) => {
+                        sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
+                    });
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: error.message });
+        }
+    }).catch(error => {
+        res.status(500).json({
+            message: error.message
+        });
+    });
 };
 
 /**
