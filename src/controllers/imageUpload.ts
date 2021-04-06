@@ -33,6 +33,7 @@ export const postImage = (req: Request, res: Response) => {
             let blobName: string = imgRequest.name.substring(0, index);
             blobName = blobName.concat('_', uniqueID, imgRequest.name.substring(index));
 
+            // TODO: This code is supposed to try to repeatedly a new UID if an image with this name and UID already exists. The while loop apparently does not terminate, unfortunately. I think we may want to use recursion. Anyway, the chances are pretty low that a file with this name already exists, and even if we overwrite an old file, it's not a huge deal.
             // while (!unique) {
             //     uniqueID = uid(11);
             //     index = imgRequest.name.lastIndexOf('.');
