@@ -7,9 +7,10 @@ import path from 'path';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import cors from 'cors';
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
-import { checkJwt } from './util/auth';
+import {checkAdmin, checkJwt, userJwt} from './util/auth';
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
@@ -78,6 +79,10 @@ app.use('/api', userRouter);
  */
 app.get('/test-auth0-security', checkJwt, (req, res) => {
     console.log(req);
+    res.send('Secured');
+});
+
+app.get('/test-admin-access', userJwt, checkAdmin, (req, res) => {
     res.send('Secured');
 });
 
