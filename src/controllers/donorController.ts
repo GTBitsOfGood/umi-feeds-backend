@@ -1,12 +1,14 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 import jwt_decode from 'jwt-decode';
+import { create } from 'domain';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
+import { isAdmin } from '../util/auth';
 
 /**
  * Gets Donors
@@ -111,7 +113,14 @@ export const postDonations = (req: Request, res: Response) => {
         return;
     }
     User.findOne({ sub: { $eq: payload.sub } }).then(user => {
-        jsonBody.donor = user._id;
+        if ('donorInfo' in user) {
+            jsonBody.donor = user._id;
+        } else if (!isAdmin(payload)) {
+            res.status(500).json({
+                message: 'User is not an admin or a donor'
+            });
+            return;
+        }
         try {
             if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
                 res.status(400).json({
