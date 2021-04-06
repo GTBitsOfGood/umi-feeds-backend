@@ -1,14 +1,14 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 import jwt_decode from 'jwt-decode';
+import { create } from 'domain';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
-import {create} from "domain";
-import {isAdmin} from "../util/auth";
+import { isAdmin } from '../util/auth';
 
 /**
  * Gets Donors

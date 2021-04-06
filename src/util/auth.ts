@@ -1,6 +1,6 @@
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
-import jwt_decode, {JwtPayload} from "jwt-decode";
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 
 export const checkJwt = jwt({
     // Dynamically provide a signing key
@@ -43,8 +43,8 @@ export const checkAdmin = function (req: any, res: any, next: any) {
     } else {
         throw new Error('User is not registered with a role in the Umifeeds organization');
     }
-}
+};
 
 export const isAdmin = function (jwtTokenDecoded:JwtPayload) {
     return ('https://bitsofgood.org/roles' in jwtTokenDecoded) && ((<Array<string>>jwtTokenDecoded['https://bitsofgood.org/roles']).includes('Umifeeds-Admin'));
-}
+};

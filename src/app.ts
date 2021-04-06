@@ -11,7 +11,7 @@ import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
-import {checkAdmin, checkJwt, userJwt} from './util/auth';
+import { checkAdmin, checkJwt, userJwt } from './util/auth';
 
 // Controllers (route handlers)
 import * as imageController from './controllers/imageUpload';
