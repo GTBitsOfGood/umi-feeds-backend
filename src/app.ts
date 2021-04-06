@@ -7,6 +7,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import cors from 'cors';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
 import { checkJwt } from './util/auth';
@@ -24,15 +25,30 @@ const MongoStore = mongo(session);
 const app = express();
 
 // Connect to MongoDB
+const ENVIRONMENT = process.env.NODE_ENV;
 const mongoUrl = MONGODB_URI;
 mongoose.Promise = bluebird;
 
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
-    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
-).catch(err => {
-    console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
-    // process.exit();
-});
+if (ENVIRONMENT !== 'test') {
+    mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+        () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
+    ).catch(err => {
+        console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
+        // process.exit();
+    });
+} else if (ENVIRONMENT === 'test') {
+    // Connect to mongo memory server for testing
+    const mongoServer = new MongoMemoryServer(); // in-memory server
+
+    mongoServer.getUri().then((mongoUri: string) => {
+        mongoose.connect(mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+            () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
+        ).catch(err => {
+            console.log(`Mock MongoDB connection error. Please make sure MongoDB is running. ${err}`);
+            // process.exit();
+        });
+    });
+}
 
 // Express configuration
 app.set('port', process.env.PORT || 3000);
@@ -77,7 +93,7 @@ app.use('/api', userRouter);
  * it from that Auth0 dashboard page.
  */
 app.get('/test-auth0-security', checkJwt, (req, res) => {
-    console.log(req);
+    // console.log(req);
     res.send('Secured');
 });
 

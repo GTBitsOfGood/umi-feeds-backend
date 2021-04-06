@@ -1,9 +1,6 @@
 {
   "parser": "@typescript-eslint/parser",
-  "extends": [
-    "airbnb",
-    "plugin:@typescript-eslint/recommended"
-  ],
+  "extends": ["airbnb", "plugin:@typescript-eslint/recommended"],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module"
@@ -25,10 +22,7 @@
       }
     ],
     "@typescript-eslint/ban-ts-ignore": "off",
-    "indent": [
-      "error",
-      4
-    ],
+    "indent": ["error", 4],
     "no-param-reassign": [
       2,
       {
@@ -53,10 +47,7 @@
     "no-console": [
       "warn",
       {
-        "allow": [
-          "warn",
-          "error"
-        ]
+        "allow": ["warn", "error"]
       }
     ],
     "no-use-before-define": "off",
@@ -79,6 +70,8 @@
     "no-restricted-syntax": "off",
     "no-await-in-loop": "warn",
     "no-continue": "off",
-    "guard-for-in": "warn"
+    "guard-for-in": "warn",
+    "camelcase": "off",
+    "no-underscore-dangle": "off"
   }
 }
