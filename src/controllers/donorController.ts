@@ -55,6 +55,25 @@ export const modifyDonor = (req: Request, res: Response) => {
 };
 
 /**
+ * Gets details of a donor based on its id
+ * @route GET /donors/:donor_id
+ */
+export const getDonorDetails = (req: Request, res: Response) => {
+    // authenticating endpoint
+    const payload: unknown = jwt_decode(req.headers.authorization);
+    if (!payload) {
+        return res.status(400).json({ error: 'Invalid ID token' });
+    }
+
+    const id = req.params.donor_id;
+    return User.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
+        .then(result => { res.status(200).json({ donor: result }); })
+        .catch((error: Error) => {
+            res.status(400).json({ message: error.message });
+        });
+};
+
+/**
  * Gets Donations
  * @route GET /donations
  */
