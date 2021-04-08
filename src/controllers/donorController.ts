@@ -228,7 +228,6 @@ export const userDonations = (req: Request, res: Response) => {
  */
 export const getDonationDetails = (req: Request, res: Response) => {
     const id = req.params.donation_id;
-    User.findOne();
     return Donation.findById(id)
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
         .populate('volunteer', '_id volunteerInfo.phone')
