@@ -1,6 +1,7 @@
 import { UploadedFile } from 'express-fileupload';
 import { Response, Request, NextFunction } from 'express';
 import storage from 'azure-storage';
+import { uid } from 'uid';
 
 const containerName = 'image-container';
 
@@ -33,8 +34,12 @@ export function uploadFiles(files: UploadedFile[]): string[] {
 export function uploadFile(file: UploadedFile): string {
     const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
     const imgRequest = file as UploadedFile;
+    const uniqueID: string = uid(11);
+    const index: number = imgRequest.name.lastIndexOf('.');
+    const blobName: string = imgRequest.name.substring(0, index);
+    blobName.concat('_', uniqueID, imgRequest.name.substring(index));
 
-    blobSVC.createBlockBlobFromText(containerName, imgRequest.name, imgRequest.data, (error: Error) => {
+    blobSVC.createBlockBlobFromText(containerName, blobName, imgRequest.data, (error: Error) => {
         if (error) {
             console.error(`Error in createBlockBlobFromText: ${error}`);
             throw new Error(error.message);

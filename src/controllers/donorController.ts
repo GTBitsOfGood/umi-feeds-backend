@@ -2,12 +2,14 @@ import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 // eslint-disable-next-line camelcase
 import jwt_decode, { JwtPayload } from 'jwt-decode';
+import { create } from 'domain';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
+import { isAdmin } from '../util/auth';
 
 /**
  * Gets Donors
@@ -54,6 +56,25 @@ export const modifyDonor = (req: Request, res: Response) => {
 };
 
 /**
+ * Gets details of a donor based on its id
+ * @route GET /donors/:donor_id
+ */
+export const getDonorDetails = (req: Request, res: Response) => {
+    // authenticating endpoint
+    const payload: unknown = jwt_decode(req.headers.authorization);
+    if (!payload) {
+        return res.status(400).json({ error: 'Invalid ID token' });
+    }
+
+    const id = req.params.donor_id;
+    return User.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
+        .then(result => { res.status(200).json({ donor: result }); })
+        .catch((error: Error) => {
+            res.status(400).json({ message: error.message });
+        });
+};
+
+/**
  * Gets Donations
  * @route GET /donations
  */
@@ -84,39 +105,61 @@ export const getDonations = (req: Request, res: Response) => {
  */
 export const postDonations = (req: Request, res: Response) => {
     const jsonBody: Omit<DonationDocument, keyof Document> & { descriptionImages?: string[], foodImages?: string[] } = JSON.parse(req.body.json);
-    try {
-        if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
-            res.status(400).json({
-                success: false,
-                message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
-            });
-        } else {
-            jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
-            jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
-            const donation = new Donation(jsonBody);
-            donation.save()
-                .then(result => {
-                    res.status(201).json({
-                        donation: result
-                    });
-                })
-                .catch(error => {
-                    res.status(500).json({
-                        message: error.message
-                    });
-                });
 
-            // Notify admins about the new donation
-            User.findById(jsonBody.donor).then(result => {
-                userController.getPushTokens('admin').then((tokens: string[]) => {
-                    sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
-                });
-            });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+    const payload: any = jwt_decode(req.headers.authorization);
+    if (!payload) {
+        res.status(400).json({
+            error: 'Invalid ID token'
+        });
+        return;
     }
+    User.findOne({ sub: { $eq: payload.sub } }).then(user => {
+        if ('donorInfo' in user) {
+            jsonBody.donor = user._id;
+        } else if (!isAdmin(payload)) {
+            res.status(500).json({
+                message: 'User is not an admin or a donor'
+            });
+            return;
+        }
+        try {
+            if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
+                res.status(400).json({
+                    success: false,
+                    message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
+                });
+            } else {
+                jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+                jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
+                const donation = new Donation(jsonBody);
+                donation.save()
+                    .then(result => {
+                        res.status(201).json({
+                            donation: result
+                        });
+                    })
+                    .catch(error => {
+                        res.status(500).json({
+                            message: error.message
+                        });
+                    });
+
+                // Notify admins about the new donation
+                User.findById(jsonBody.donor).then(result => {
+                    userController.getPushTokens('admin').then((tokens: string[]) => {
+                        sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
+                    });
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: error.message });
+        }
+    }).catch(error => {
+        res.status(500).json({
+            message: error.message
+        });
+    });
 };
 
 /**
