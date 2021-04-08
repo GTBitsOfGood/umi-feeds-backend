@@ -1,5 +1,7 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
+// eslint-disable-next-line camelcase
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
@@ -183,9 +185,94 @@ export const userDonations = (req: Request, res: Response) => {
  */
 export const getDonationDetails = (req: Request, res: Response) => {
     const id = req.params.donation_id;
+    User.findOne();
     return Donation.findById(id)
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
         .populate('volunteer', '_id volunteerInfo.phone')
         .then(result => { return res.status(200).json({ donation: result }); })
         .catch((error: Error) => res.status(400).json({ message: error.message }));
+};
+
+/**
+ * Marks a donation as reserved
+ * @route POST /donations/:donation_id/reserve
+ */
+export const reserveDonation = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        const volunteerId = user.id;
+
+        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.reservedByVolunteerTime': new Date(Date.now()), volunteer: volunteerId } })
+            .then(result => { res.status(200).json({ donation: result }); })
+            .catch((error: Error) => res.status(400).json({ message: error.message }));
+    });
+};
+
+/**
+ * Marks a donation as picked up
+ * @route POST /donations/:donation_id/pick-up
+ */
+export const pickedUp = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        const donationVolunteer = req.params.volunteer_id;
+        const pickupVolunteer = user.id;
+
+        if (pickupVolunteer !== donationVolunteer) {
+            res.status(400).json({
+                success: false,
+                message: 'Pickup volunteer does not match volunteer of donation',
+            });
+        }
+
+        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.pickupTime': new Date(Date.now()), volunteer: pickupVolunteer } })
+            .then(result => { res.status(200).json({ donation: result }); })
+            .catch((error: Error) => res.status(400).json({ message: error.message }));
+    });
+};
+
+/**
+ * Marks a donation as dropped off
+ * @route POST /donations/:donation_id/drop-off
+ */
+export const droppedOff = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        const donationVolunteer = req.params.volunteer_id;
+        const dropoffVolunteer = user.id;
+
+        if (dropoffVolunteer !== donationVolunteer) {
+            res.status(400).json({
+                success: false,
+                message: 'Dropoff volunteer does not match volunteer of donation',
+            });
+        }
+
+        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.dropoffTime': new Date(Date.now()), volunteer: dropoffVolunteer } })
+            .then(result => { res.status(200).json({ donation: result }); })
+            .catch((error: Error) => res.status(400).json({ message: error.message }));
+    });
+};
+
+/**
+ * Marks a donation as donor confirmed
+ * @route POST /donations/:donation_id/donor-confirm
+ */
+export const confirmDonation = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        const donationDonor = req.params.donor_id;
+        const donorId = user.id;
+
+        if (donorId !== donationDonor) {
+            res.status(400).json({
+                success: false,
+                message: 'Current donor id does not match the donor of the donation',
+            });
+        }
+
+        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.donorConfirmationTime': new Date(Date.now()) } })
+            .then(result => { res.status(200).json({ donation: result }); })
+            .catch((error: Error) => res.status(400).json({ message: error.message }));
+    });
 };

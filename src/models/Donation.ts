@@ -9,9 +9,10 @@ export interface DonationDocument extends Document {
         endTime: Date;
     };
     pickup?: {
-        pickupTime: Date;
-        dropoffTime: Date;
-        // volunteer: Volunteer
+        reservedByVolunteerTime?: Date, // when a volunteer says that they're starting to pick it up
+        pickupTime?: Date,
+        dropoffTime?: Date,
+        donorConfirmationTime?: Date, // when a donor confirms that it has been picked up
     };
     description: string;
     descriptionImages: string[];
@@ -41,8 +42,10 @@ const donationSchema = new Schema<DonationDocument>({
         }
     },
     pickup: {
+        reservedByVolunteerTime: Date,
         pickupTime: Date,
-        dropoffTime: Date
+        dropoffTime: Date,
+        donorConfirmationTime: Date
     },
     description: {
         type: String,
