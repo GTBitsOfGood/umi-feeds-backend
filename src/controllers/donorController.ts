@@ -129,8 +129,8 @@ export const postDonations = (req: Request, res: Response) => {
                     message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
                 });
             } else {
-                jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
-                jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
+                jsonBody.descriptionImages = req.files?.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+                jsonBody.foodImages = req.files?.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
                 const donation = new Donation(jsonBody);
                 donation.save()
                     .then(result => {
