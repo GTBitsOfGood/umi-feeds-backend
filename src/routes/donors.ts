@@ -15,8 +15,8 @@ router.get('/donors/:donor_id/donations', donorController.userDonations);
 router.get('/donations/:donation_id', donorController.getDonationDetails);
 router.get('/donors/:donor_id', donorController.getDonorDetails);
 router.post('/donations/:donation_id/reserve', donorController.reserveDonation);
-router.post('/donations/:donation_id/pick-up', donorController.pickedUp);
-router.post('/donations/:donation_id/drop-off', donorController.droppedOff);
+router.post('/donations/:donation_id/pick-up', donorController.pickUp);
+router.post('/donations/:donation_id/drop-off', donorController.dropOff);
 router.post('/donations/:donation_id/donor-confirm', donorController.confirmDonation);
 
 export default router;
