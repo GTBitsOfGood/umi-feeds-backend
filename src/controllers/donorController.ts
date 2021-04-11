@@ -2,8 +2,6 @@ import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 // eslint-disable-next-line camelcase
 import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { create } from 'domain';
-import { Donor } from '../models/Donor';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
@@ -251,48 +249,56 @@ export const reserveDonation = (req: Request, res: Response) => {
 };
 
 /**
- * Marks a donation as picked up
+ * Marks a donation as picked up. The MongoDB user id of the user corresponding to the sub field of the provided JWT in the authorization header must correspond to the volunteer id of the donation (i.e., this same volunteer must have already marked it as reserved).
  * @route POST /donations/:donation_id/pick-up
  */
-export const pickedUp = (req: Request, res: Response) => {
+export const pickUp = (req: Request, res: Response) => {
     User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
-        const donationVolunteer = req.params.volunteer_id;
-        const pickupVolunteer = user.id;
+        Donation.findById(donationId).then(donation => {
+            const donationVolunteer = donation.volunteer;
+            const pickupVolunteer = user.id;
 
-        if (pickupVolunteer !== donationVolunteer) {
-            res.status(400).json({
-                success: false,
-                message: 'Pickup volunteer does not match volunteer of donation',
-            });
-        }
+            // eslint-disable-next-line eqeqeq
+            if (pickupVolunteer != donationVolunteer) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Pickup volunteer does not match volunteer of donation',
+                });
+            }
 
-        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.pickupTime': new Date(Date.now()), volunteer: pickupVolunteer } })
-            .then(result => { res.status(200).json({ donation: result }); })
-            .catch((error: Error) => res.status(400).json({ message: error.message }));
+            return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.pickupTime': new Date(Date.now()), volunteer: pickupVolunteer } })
+                .then(result => { res.status(200).json({ donation: result }); })
+                .catch((error: Error) => res.status(400).json({ message: error.message }));
+        });
     });
 };
 
 /**
- * Marks a donation as dropped off
+ * Marks a donation as dropped off. The MongoDB user id of the user corresponding to the sub field of the provided JWT in the authorization header must correspond to the volunteer id of the donation.
  * @route POST /donations/:donation_id/drop-off
  */
-export const droppedOff = (req: Request, res: Response) => {
+export const dropOff = (req: Request, res: Response) => {
     User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
-        const donationVolunteer = req.params.volunteer_id;
-        const dropoffVolunteer = user.id;
+        Donation.findById(donationId).then(donation => {
+            const donationVolunteer = donation.volunteer;
+            const dropoffVolunteer = user.id;
 
-        if (dropoffVolunteer !== donationVolunteer) {
-            res.status(400).json({
-                success: false,
-                message: 'Dropoff volunteer does not match volunteer of donation',
-            });
-        }
+            // TODO: check that the donation has already been picked up
 
-        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.dropoffTime': new Date(Date.now()), volunteer: dropoffVolunteer } })
-            .then(result => { res.status(200).json({ donation: result }); })
-            .catch((error: Error) => res.status(400).json({ message: error.message }));
+            // eslint-disable-next-line eqeqeq
+            if (dropoffVolunteer != donationVolunteer) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Dropoff volunteer does not match volunteer of donation',
+                });
+            }
+
+            return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.dropoffTime': new Date(Date.now()), volunteer: dropoffVolunteer } })
+                .then(result => { res.status(200).json({ donation: result }); })
+                .catch((error: Error) => res.status(400).json({ message: error.message }));
+        });
     });
 };
 
