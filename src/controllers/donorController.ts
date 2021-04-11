@@ -79,7 +79,7 @@ export const getDonorDetails = (req: Request, res: Response) => {
 export const getDonations = (req: Request, res: Response) => {
     Donation.find()
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
-        .populate('volunteer', '_id volunteerInfo.phone')
+        .populate('volunteer', '_id name volunteerInfo.phone')
         .then(results => {
             return res.status(200).json({
                 donations: results,
@@ -228,7 +228,7 @@ export const getDonationDetails = (req: Request, res: Response) => {
     const id = req.params.donation_id;
     return Donation.findById(id)
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
-        .populate('volunteer', '_id volunteerInfo.phone')
+        .populate('volunteer', '_id name volunteerInfo.phone')
         .then(result => { return res.status(200).json({ donation: result }); })
         .catch((error: Error) => res.status(400).json({ message: error.message }));
 };
