@@ -257,19 +257,22 @@ export const reserveDonation = (req: Request, res: Response) => {
 export const pickedUp = (req: Request, res: Response) => {
     User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
-        const donationVolunteer = req.params.volunteer_id;
-        const pickupVolunteer = user.id;
+        Donation.findById(donationId).then(donation => {
+            const donationVolunteer = donation.volunteer;
+            const pickupVolunteer = user.id;
 
-        if (pickupVolunteer !== donationVolunteer) {
-            res.status(400).json({
-                success: false,
-                message: 'Pickup volunteer does not match volunteer of donation',
-            });
-        }
+            // eslint-disable-next-line eqeqeq
+            if (pickupVolunteer != donationVolunteer) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Pickup volunteer does not match volunteer of donation',
+                });
+            }
 
-        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.pickupTime': new Date(Date.now()), volunteer: pickupVolunteer } })
-            .then(result => { res.status(200).json({ donation: result }); })
-            .catch((error: Error) => res.status(400).json({ message: error.message }));
+            return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.pickupTime': new Date(Date.now()), volunteer: pickupVolunteer } })
+                .then(result => { res.status(200).json({ donation: result }); })
+                .catch((error: Error) => res.status(400).json({ message: error.message }));
+        });
     });
 };
 
@@ -280,19 +283,22 @@ export const pickedUp = (req: Request, res: Response) => {
 export const droppedOff = (req: Request, res: Response) => {
     User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
-        const donationVolunteer = req.params.volunteer_id;
-        const dropoffVolunteer = user.id;
+        Donation.findById(donationId).then(donation => {
+            const donationVolunteer = donation.volunteer;
+            const dropoffVolunteer = user.id;
 
-        if (dropoffVolunteer !== donationVolunteer) {
-            res.status(400).json({
-                success: false,
-                message: 'Dropoff volunteer does not match volunteer of donation',
-            });
-        }
+            // eslint-disable-next-line eqeqeq
+            if (dropoffVolunteer != donationVolunteer) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Dropoff volunteer does not match volunteer of donation',
+                });
+            }
 
-        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.dropoffTime': new Date(Date.now()), volunteer: dropoffVolunteer } })
-            .then(result => { res.status(200).json({ donation: result }); })
-            .catch((error: Error) => res.status(400).json({ message: error.message }));
+            return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.dropoffTime': new Date(Date.now()), volunteer: dropoffVolunteer } })
+                .then(result => { res.status(200).json({ donation: result }); })
+                .catch((error: Error) => res.status(400).json({ message: error.message }));
+        });
     });
 };
 
