@@ -1,12 +1,13 @@
 import { Response, Request } from 'express';
 import { Document } from 'mongoose';
-import jwt_decode from 'jwt-decode';
-import { Donor } from '../models/Donor';
+// eslint-disable-next-line camelcase
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
+import { isAdmin } from '../util/auth';
 
 /**
  * Gets Donors
@@ -78,7 +79,7 @@ export const getDonorDetails = (req: Request, res: Response) => {
 export const getDonations = (req: Request, res: Response) => {
     Donation.find()
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
-        .populate('volunteer', '_id volunteerInfo.phone')
+        .populate('volunteer', '_id name volunteerInfo.phone')
         .then(results => {
             return res.status(200).json({
                 donations: results,
@@ -111,7 +112,14 @@ export const postDonations = (req: Request, res: Response) => {
         return;
     }
     User.findOne({ sub: { $eq: payload.sub } }).then(user => {
-        jsonBody.donor = user._id;
+        if ('donorInfo' in user) {
+            jsonBody.donor = user._id;
+        } else if (!isAdmin(payload)) {
+            res.status(500).json({
+                message: 'User is not an admin or a donor'
+            });
+            return;
+        }
         try {
             if ((!req.files || !req.files.descriptionImage) && !jsonBody.description) {
                 res.status(400).json({
@@ -119,8 +127,8 @@ export const postDonations = (req: Request, res: Response) => {
                     message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
                 });
             } else {
-                jsonBody.descriptionImages = req.files.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
-                jsonBody.foodImages = req.files.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
+                jsonBody.descriptionImages = req.files?.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+                jsonBody.foodImages = req.files?.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
                 const donation = new Donation(jsonBody);
                 donation.save()
                     .then(result => {
@@ -220,7 +228,99 @@ export const getDonationDetails = (req: Request, res: Response) => {
     const id = req.params.donation_id;
     return Donation.findById(id)
         .populate('donor', '_id donorInfo.name donorInfo.phone donorInfo.address donorInfo.longitude donorInfo.latitude')
-        .populate('volunteer', '_id volunteerInfo.phone')
+        .populate('volunteer', '_id name volunteerInfo.phone')
         .then(result => { return res.status(200).json({ donation: result }); })
         .catch((error: Error) => res.status(400).json({ message: error.message }));
+};
+
+/**
+ * Marks a donation as reserved
+ * @route POST /donations/:donation_id/reserve
+ */
+export const reserveDonation = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        const volunteerId = user.id;
+
+        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.reservedByVolunteerTime': new Date(Date.now()), volunteer: volunteerId } })
+            .then(result => { res.status(200).json({ donation: result }); })
+            .catch((error: Error) => res.status(400).json({ message: error.message }));
+    });
+};
+
+/**
+ * Marks a donation as picked up. The MongoDB user id of the user corresponding to the sub field of the provided JWT in the authorization header must correspond to the volunteer id of the donation (i.e., this same volunteer must have already marked it as reserved).
+ * @route POST /donations/:donation_id/pick-up
+ */
+export const pickUp = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        Donation.findById(donationId).then(donation => {
+            const donationVolunteer = donation.volunteer;
+            const pickupVolunteer = user.id;
+
+            // eslint-disable-next-line eqeqeq
+            if (pickupVolunteer != donationVolunteer) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Pickup volunteer does not match volunteer of donation',
+                });
+            }
+
+            return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.pickupTime': new Date(Date.now()), volunteer: pickupVolunteer } })
+                .then(result => { res.status(200).json({ donation: result }); })
+                .catch((error: Error) => res.status(400).json({ message: error.message }));
+        });
+    });
+};
+
+/**
+ * Marks a donation as dropped off. The MongoDB user id of the user corresponding to the sub field of the provided JWT in the authorization header must correspond to the volunteer id of the donation.
+ * @route POST /donations/:donation_id/drop-off
+ */
+export const dropOff = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        Donation.findById(donationId).then(donation => {
+            const donationVolunteer = donation.volunteer;
+            const dropoffVolunteer = user.id;
+
+            // TODO: check that the donation has already been picked up
+
+            // eslint-disable-next-line eqeqeq
+            if (dropoffVolunteer != donationVolunteer) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Dropoff volunteer does not match volunteer of donation',
+                });
+            }
+
+            return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.dropoffTime': new Date(Date.now()), volunteer: dropoffVolunteer } })
+                .then(result => { res.status(200).json({ donation: result }); })
+                .catch((error: Error) => res.status(400).json({ message: error.message }));
+        });
+    });
+};
+
+/**
+ * Marks a donation as donor confirmed
+ * @route POST /donations/:donation_id/donor-confirm
+ */
+export const confirmDonation = (req: Request, res: Response) => {
+    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+        const donationId = req.params.donation_id;
+        const donationDonor = req.params.donor_id;
+        const donorId = user.id;
+
+        if (donorId !== donationDonor) {
+            res.status(400).json({
+                success: false,
+                message: 'Current donor id does not match the donor of the donation',
+            });
+        }
+
+        return Donation.findByIdAndUpdate(donationId, { $set: { 'pickup.donorConfirmationTime': new Date(Date.now()) } })
+            .then(result => { res.status(200).json({ donation: result }); })
+            .catch((error: Error) => res.status(400).json({ message: error.message }));
+    });
 };
