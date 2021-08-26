@@ -112,7 +112,8 @@ export const postDonations = (req: Request, res: Response) => {
         return;
     }
     User.findOne({ sub: { $eq: payload.sub } }).then(user => {
-        if ('donorInfo' in user) {
+        console.log(user);
+        if (user != null && !user.admin) {
             jsonBody.donor = user._id;
         } else if (!isAdmin(payload)) {
             res.status(500).json({

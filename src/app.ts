@@ -7,7 +7,6 @@ import path from 'path';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import cors from 'cors';
-import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MONGODB_URI, SESSION_SECRET } from './util/secrets';
 import { sendBatchNotification } from './util/notifications';
@@ -41,14 +40,17 @@ if (ENVIRONMENT !== 'test') {
     // Connect to mongo memory server for testing
     const mongoServer = new MongoMemoryServer(); // in-memory server
 
-    mongoServer.getUri().then((mongoUri: string) => {
+    try {
+        const mongoUri: string = mongoServer.getUri();
         mongoose.connect(mongoUri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
             () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
         ).catch(err => {
             console.log(`Mock MongoDB connection error. Please make sure MongoDB is running. ${err}`);
             // process.exit();
         });
-    });
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 // Express configuration
