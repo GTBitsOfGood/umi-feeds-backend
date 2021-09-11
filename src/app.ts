@@ -16,6 +16,7 @@ import { checkAdmin, checkJwt, userJwt } from './util/auth';
 import * as imageController from './controllers/imageUpload';
 
 // Sub Routers
+import MainRoutes from './routes/index';
 import donorRouter from './routes/donors';
 import userRouter from './routes/users';
 
@@ -86,6 +87,9 @@ app.post('/testpush', (req, res) => {
 });
 app.use('/api', donorRouter);
 app.use('/api', userRouter);
+
+// Work off of this one. the others will get retired soon
+app.use('/', MainRoutes);
 
 /**
  * To make a request to this, go to https://manage.auth0.com/dashboard/us/bog-dev/apis/602861e9ea4b12003f71d5d8/test

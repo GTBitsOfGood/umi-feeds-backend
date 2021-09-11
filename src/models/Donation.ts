@@ -1,3 +1,5 @@
+// DO NOT USE ANYMORE
+
 import mongoose, { Model, Schema, Document } from 'mongoose';
 import { UserDocument } from './User';
 

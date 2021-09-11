@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 import jwt_decode, { JwtPayload } from 'jwt-decode';
 import { User } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
-import { uploadFileOrFiles } from '../util/image';
+// import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
 import { sendBatchNotification } from '../util/notifications';
 import { isAdmin } from '../util/auth';
@@ -128,8 +128,8 @@ export const postDonations = (req: Request, res: Response) => {
                     message: "No images attached to the key 'descriptionImage', nor a description in the stringified json body.",
                 });
             } else {
-                jsonBody.descriptionImages = req.files?.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
-                jsonBody.foodImages = req.files?.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
+                // jsonBody.descriptionImages = req.files?.descriptionImage ? uploadFileOrFiles(req.files.descriptionImage) : [];
+                // jsonBody.foodImages = req.files?.foodImage ? uploadFileOrFiles(req.files.foodImage) : [];
                 const donation = new Donation(jsonBody);
                 donation.save()
                     .then(result => {

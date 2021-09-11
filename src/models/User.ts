@@ -1,4 +1,58 @@
+// DO NOT USE ANYMORE
+
 import mongoose from 'mongoose';
+
+type Address = {
+    // include _id
+    businessName: string;
+    streetAddress: string;
+    buildingNumber: number;
+    city: string;
+    state: string;
+    zipCode: number;
+    longitude: number;
+    latitude: number;
+}
+
+type Dish = {
+    // include _id
+    dishName: string;
+    cost: number;
+    pounds: number;
+    allergens: string[];
+    imageLink: string;
+    comments: string;
+}
+
+type DonationDishes = {
+    dishID: string;
+    quantity: number;
+}
+
+type DonationForm = {
+    // include _id
+    ongoing: boolean;
+    imageLink: string;
+    dishes: DonationDishes[];
+    pickupAddress: Address;
+    pickupInstructions: string;
+    pickupStartTime: Date;
+    pickupEndTime: Date;
+}
+
+export type MockUserDocument = mongoose.Document & {
+    // include _id
+    name: string;
+    email: string;
+    phoneNumber: number;
+    pushTokens: string[];
+    isAdmin: boolean;
+    auth0AccessToken: string;
+    roles: string[];
+    pickupAddresses: Address[];
+    dishes: Dish[];
+    donations: DonationForm[];
+}
 
 export type UserDocument = mongoose.Document & {
     name: string;

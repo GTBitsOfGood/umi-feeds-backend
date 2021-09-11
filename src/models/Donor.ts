@@ -1,3 +1,5 @@
+// DO NOT USE ANYMORE
+
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface DonorDocument extends Document {

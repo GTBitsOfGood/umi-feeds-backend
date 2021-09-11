@@ -1,17 +1,23 @@
+// THIS FILE IS NOT IN USE RIGHT NOW. PLEASE ONLY USE IT FOR YOUR REFERENECE
+
 import { Response, Request } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import storage from 'azure-storage';
 import { uid } from 'uid';
 
+import { uploadFile } from '../util/image';
+
 const containerName = 'image-container';
 
 /**
+ * NOT IN USE RIGHT NOW
  * Upload an image to Azure Blob Storage.
  * @param req Send a multipart/form-data request with the "image" key as the image you are uploading.
  * @route POST /upload
  */
 export const postImage = (req: Request, res: Response) => {
     try {
+        console.log(req.files);
         if (!req.files) {
             res.status(400).send({
                 status: false,
@@ -25,13 +31,14 @@ export const postImage = (req: Request, res: Response) => {
                 sentReq: String(req.files)
             });
         } else {
-            const imgRequest = req.files.image as UploadedFile;
-            const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
-            // let unique = false;
-            const uniqueID: string = uid(11);
-            const index: number = imgRequest.name.lastIndexOf('.');
-            let blobName: string = imgRequest.name.substring(0, index);
-            blobName = blobName.concat('_', uniqueID, imgRequest.name.substring(index));
+            // const url = uploadFile(req.files.image as UploadedFile);
+            // const imgRequest = req.files.image as UploadedFile;
+            // const blobSVC = storage.createBlobService(process.env.CONNECTION_STRING_AZURE);
+            // // let unique = false;
+            // const uniqueID: string = uid(11);
+            // const index: number = imgRequest.name.lastIndexOf('.');
+            // let blobName: string = imgRequest.name.substring(0, index);
+            // blobName = blobName.concat('_', uniqueID, imgRequest.name.substring(index));
 
             // TODO: This code is supposed to try to repeatedly a new UID if an image with this name and UID already exists. The while loop apparently does not terminate, unfortunately. I think we may want to use recursion. Anyway, the chances are pretty low that a file with this name already exists, and even if we overwrite an old file, it's not a huge deal.
             // while (!unique) {
@@ -50,14 +57,15 @@ export const postImage = (req: Request, res: Response) => {
             //       });
             // }
 
-            blobSVC.createBlockBlobFromText(containerName, blobName, imgRequest.data, (err: Error) => {
-                if (err) {
-                    console.error(`Error in createBlockBlobFromText: ${err}`);
-                    res.status(500).send(String(err));
-                } else {
-                    res.send('File uploaded!');
-                }
-            });
+            // blobSVC.createBlockBlobFromText(containerName, blobName, imgRequest.data, (err: Error) => {
+            //     if (err) {
+            //         console.error(`Error in createBlockBlobFromText: ${err}`);
+            //         res.status(500).send(String(err));
+            //     } else {
+            //         res.send('File uploaded!');
+            //     }
+            // });
+            res.send('hello');
         }
     } catch (err) {
         console.error(err);
