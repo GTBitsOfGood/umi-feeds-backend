@@ -1,4 +1,4 @@
-// DO NOT USE ANYMORE
+// DO NOT USE ANYTHING IN THIS FILE ANYMORE
 
 import mongoose from 'mongoose';
 

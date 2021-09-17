@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 export type Address = {
     _id?: string; // the unqiue id assigned to a dish. Let Mongo create this when you insert a document without any _id attribute
-    businessName: string;
     streetAddress: string;
     buildingNumber: number;
     city: string;
@@ -13,7 +12,6 @@ export type Address = {
 }
 
 export const AddressSchema = new mongoose.Schema<Address>({
-    businessName: { type: String, required: true },
     streetAddress: { type: String, required: true },
     buildingNumber: { type: Number, required: true },
     city: { type: String, required: true },

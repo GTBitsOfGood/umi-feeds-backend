@@ -5,9 +5,10 @@ import { Dish, DishSchema } from './Dishes';
 import { DonationForm, DonationFormSchema } from './DonationForms';
 
 export type UserDocument = mongoose.Document & {
-  _id?: string; // the unqiue id assigned to a dish. Let Mongo create this when you insert a document without any _id attribute
-  name: string;
+  _id?: string; // the unqiue id assigned to a user. Let Mongo create this when you insert a document without any _id attribute
+  name: string; // will split string in the frontend
   email: string;
+  businessName: string;
   phoneNumber: number;
   pushTokens: string[];
   isAdmin: boolean;
@@ -21,6 +22,7 @@ export type UserDocument = mongoose.Document & {
 const userSchema = new mongoose.Schema<UserDocument>({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true }, // later down the line, we will make this optional for recipients
+    businessName: { type: String, unique: true, required: true },
     pushTokens: { type: [String], required: true }, // expo push tokens
     phoneNumber: { type: Number, required: true },
     isAdmin: { type: Boolean, require: true },
