@@ -30,8 +30,36 @@ export const getDonationForms = (req: Request, res: Response) => {
                     }
                 }
                 // If none of the donation forms had the matching id then we need to report an error
-                res.status(500).json({ message: `Could not find donations form ${formid} for user ${userid}` });
+                res.status(500).json({ message: `Could not find donations form ${formid} for user ${userid}`, donationforms: [] });
             }
         })
         .catch((error: Error) => res.status(500).json({ message: error.message, donationforms: [] }));
 };
+
+/**
+ * Gets Ongoing Donation Forms by User
+ * @route GET /donationform/ongoing?id={userid}
+ */
+export const getOngoingDonationForms = (req: Request, res: Response) => {
+    const userid = req.query.id || null;
+
+    // We need a userid because all donation forms are stored under the user documents
+    if (userid == null) {
+        res.status(500).json({ message: 'No user id specified in request' });
+        return;
+    }
+
+    // We can find a single user by using the userid
+    User.findById(userid)
+        .then((results) => {
+            const donations = [];
+            // Loop through and find all ongoing donations
+            for (const donation of results.donations) {
+                if (donation.ongoing) {
+                    donations.push(donation);
+                }
+            }
+            res.status(200).json({ message: 'success', donationforms: donations });
+        })
+        .catch((error: Error) => res.status(500).json({ message: error.message, donationforms: [] }));
+}

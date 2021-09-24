@@ -6,4 +6,5 @@ const router = express.Router();
 * Code routes here for CRUD on DonationForms
 */
 router.get('', donationFormController.getDonationForms);
+router.get('/ongoing', donationFormController.getOngoingDonationForms);
 export default router;
