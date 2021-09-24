@@ -1,23 +1,48 @@
 import { Response, Request } from 'express';
-import { Document } from 'mongoose';
+
 // eslint-disable-next-line camelcase
 import { User } from '../models/User/';
 import { Dish, DishSchema } from "../models/User/Dishes"
+import mongoose from 'mongoose';
 
 
 /**
- * Gets Dishes belonging to the User
+ * Gets Dishes based on User and Dish id
  * @route GET /dishes?id=<string>
+ * @route GET /dishes?id=<string>&dishID=<string>
  *
  * */
 export const getDishesByUser = (req: Request, res: Response) => {
     const userId = req.query.id;
-    return User.findOne({ _id: userId, dishes: { $exists: true } }, 'dishes')
-        //.then(result => { res.status(200).json({ dishes: result }) })
-        .then(result => { res.status(200).send(result) })
+    const dishId = req.query.dishID
+    if (userId && dishId) {
+        return User.findOne({ _id: userId, "dishes._id": dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
+        .then(result => { 
+            if (result) {
+                res.status(200).send(result)
+            } else {
+                res.status(404).json({message: "User or dish does not exist in the database."});
+            }
+        })
         .catch((error: Error) => {
             res.status(400).json({ message: error.message });
-        });
+    });
+
+    } else if (userId) {
+        return User.findOne({ _id: userId, dishes: { $exists: true } }, { _id: 0, dishes: 1})
+            .then(result => { 
+                if (result) {
+                    res.status(200).send(result)
+                } else {
+                    res.status(404).json({message: "User does not exist in the database."});
+                }
+            })
+            .catch((error: Error) => {
+                res.status(400).json({ message: error.message });
+            });
+    } else {
+        res.status(400).json({ message: "Missing user id and/or dish id"})
+    }
 };
 
 
@@ -29,12 +54,13 @@ export const getDishesByUser = (req: Request, res: Response) => {
  export const getDishByUserAndDishID = (req: Request, res: Response) => {
     const userId = req.query.id;
     const dishId = req.query.dishID
-    return User.findOne({ _id: userId, "dishes._id": dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
-        //.then(result => { res.status(200).json({ dish: result }) })
-        .then(result => { res.status(200).send(result) })
-        .catch((error: Error) => {
-            res.status(400).json({ message: error.message });
-        });
+    //return User.findOne({ _id: userId, "dishes._id": dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
+    return User.findOne({ _id: userId, "dishes._id": dishId })
+    //.then(result => { res.status(200).json({ dish: result }) })
+    .then(result => { res.status(200).send(result) })
+    .catch((error: Error) => {
+        res.status(400).json({ message: error.message });
+    });
 };
 
 /**
