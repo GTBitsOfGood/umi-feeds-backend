@@ -1,14 +1,15 @@
 import mongoose from 'mongoose';
 import { Address, AddressSchema } from './Address';
+import {UserDocument} from "./index";
 
 export type DonationDishes = {
-  _id?: string; // the unqiue id assigned to a dish. Let Mongo create this when you insert a document without any _id attribute
+  _id?: string; // the unqiue id assigned to a donation dish. Let Mongo create this when you insert a document without any _id attribute
   dishID: string; // points to the _id field of the Dish Schema
   quantity: number;
 }
 
 export type DonationForm = {
-  _id?: string; // the unqiue id assigned to a dish. Let Mongo create this when you insert a document without any _id attribute
+  _id?: string; // the unqiue id assigned to a donation form. Let Mongo create this when you insert a document without any _id attribute
   ongoing: boolean;
   status: string;
   imageLink: string;

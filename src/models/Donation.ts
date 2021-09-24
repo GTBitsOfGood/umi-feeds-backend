@@ -1,11 +1,11 @@
 // DO NOT USE ANYMORE
 
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { UserDocument } from './User';
+import { UserDocumentDeprecated } from './User';
 
 export interface DonationDocument extends Document {
-    donor: UserDocument['_id'];
-    volunteer?: UserDocument['_id'];
+    donor: UserDocumentDeprecated['_id'];
+    volunteer?: UserDocumentDeprecated['_id'];
     availability: {
         startTime: Date;
         endTime: Date;
@@ -26,12 +26,12 @@ export interface DonationDocument extends Document {
 const donationSchema = new Schema<DonationDocument>({
     donor: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'UserDeprecated',
         required: true
     },
     volunteer: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'UserDeprecated'
     },
     availability: {
         startTime: {
