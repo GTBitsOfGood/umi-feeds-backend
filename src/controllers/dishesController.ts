@@ -1,5 +1,4 @@
 import { Response, Request } from 'express';
-
 // eslint-disable-next-line camelcase
 import { User } from '../models/User/';
 import { Dish, DishSchema } from "../models/User/Dishes"
@@ -12,7 +11,7 @@ import mongoose from 'mongoose';
  * @route GET /dishes?id=<string>&dishID=<string>
  *
  * */
-export const getDishesByUser = (req: Request, res: Response) => {
+export const getDishes = (req: Request, res: Response) => {
     const userId = req.query.id;
     const dishId = req.query.dishID
     if (userId && dishId) {
@@ -27,7 +26,6 @@ export const getDishesByUser = (req: Request, res: Response) => {
         .catch((error: Error) => {
             res.status(400).json({ message: error.message });
     });
-
     } else if (userId) {
         return User.findOne({ _id: userId, dishes: { $exists: true } }, { _id: 0, dishes: 1})
             .then(result => { 
@@ -43,24 +41,6 @@ export const getDishesByUser = (req: Request, res: Response) => {
     } else {
         res.status(400).json({ message: "Missing user id and/or dish id"})
     }
-};
-
-
-/**
- * Gets Dish matching user's id and dishID
- * @route GET /dishes?id=<string>&dishID=<string>
- *
- * */
- export const getDishByUserAndDishID = (req: Request, res: Response) => {
-    const userId = req.query.id;
-    const dishId = req.query.dishID
-    //return User.findOne({ _id: userId, "dishes._id": dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
-    return User.findOne({ _id: userId, "dishes._id": dishId })
-    //.then(result => { res.status(200).json({ dish: result }) })
-    .then(result => { res.status(200).send(result) })
-    .catch((error: Error) => {
-        res.status(400).json({ message: error.message });
-    });
 };
 
 /**
@@ -91,6 +71,8 @@ export const getDishesByUser = (req: Request, res: Response) => {
     const userId = req.query.id;
     const dishId = req.query.dishID;
     const dishBody = req.body; 
+    const id = mongoose.Types.ObjectId();
+    dishBody["_id"] = id;
     // Handle Images
     return User.updateOne({ _id: userId, "dishes._id": dishId }, { $set: { dishes: dishBody } },)
         .then(result => { res.status(200).json({ dish: result }) })
@@ -110,9 +92,14 @@ export const deleteDish = (req: Request, res: Response) => {
     const userId = req.query.id;
     const dishId = req.query.donationFormID;
 
-    return User.updateOne({ _id: userId, "dishes.id": dishId }, { $pull: { dishes: {_id: dishId} } })
-        .then(result => { res.status(200).json({ dish: result }) })
-        //.send(result)
+    return User.updateOne({ _id: userId, "dishes._id": dishId }, { $pull: { dishes: { _id: dishId } } })
+        .then(result => { 
+            if (result.nModified != 0) {
+                res.status(200).json({ message: "Success" })
+            } else {
+                res.status(404).json({ message: "This user or specified dish does not exist." })
+            }
+        })
         .catch((error: Error) => {
             res.status(400).json({ message: error.message });
         });
