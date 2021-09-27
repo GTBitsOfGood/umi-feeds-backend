@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 export type Address = {
-    _id?: string; // the unqiue id assigned to a dish. Let Mongo create this when you insert a document without any _id attribute
+    _id?: string; // the unqiue id assigned to an address. Let Mongo create this when you insert a document without any _id attribute
     streetAddress: string;
     buildingNumber: number;
     city: string;
