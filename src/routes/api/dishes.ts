@@ -1,5 +1,5 @@
 import express from 'express';
-import * as dishesController from "../../controllers/dishesController"
+import * as dishesController from '../../controllers/dishesController';
 
 const router = express.Router();
 /*
