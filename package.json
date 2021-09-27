@@ -64,7 +64,6 @@
         "mongodb-memory-server": "^6.9.6",
         "mongodb-memory-server-core": "^7.3.6",
         "mongoose": "^5.11.15",
-        "multer": "^1.4.3",
         "nodemailer": "^6.4.17",
         "passport": "^0.4.1",
         "passport-facebook": "^3.0.0",
