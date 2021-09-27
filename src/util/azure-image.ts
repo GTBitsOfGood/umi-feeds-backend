@@ -1,6 +1,6 @@
-import { BlobUploadCommonResponse } from '@azure/storage-blob';
 import intoStream from 'into-stream';
 import { UploadedFile } from 'express-fileupload';
+import { BlobDeleteResponse } from '@azure/storage-blob';
 
 const {
     BlobServiceClient,
@@ -44,4 +44,11 @@ export async function uploadImageAzure(file: UploadedFile) : Promise<string> {
                 resolve(blockBlobClient.url);
             }).catch(reject);
     });
+}
+
+export async function deleteImageAzure(uri: string) : Promise<BlobDeleteResponse> {
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blockBlobClient = containerClient.getBlockBlobClient(uri.split(`${containerName}/`)[1]);
+
+    return blockBlobClient.delete();
 }

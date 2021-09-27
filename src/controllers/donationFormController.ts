@@ -1,11 +1,11 @@
 import { Response, Request } from 'express';
 import { User } from '../models/User/index';
 
-import { uploadImageAzure } from '../util/azure-image';
+import {deleteImageAzure, uploadImageAzure} from '../util/azure-image';
 
 /**
  * Gets Donation Forms by User
- * @route GET /donationform?id={userid}[&donationFormID={formid}]
+ * @route GET /api/donationform?id={userid}[&donationFormID={formid}]
  */
 export const getDonationForms = (req: Request, res: Response) => {
     const userid = req.query.id || null;
@@ -22,12 +22,12 @@ export const getDonationForms = (req: Request, res: Response) => {
         .then((results) => {
             // If the formid wasn't specified just return all of the donation forms
             if (formid === null) {
-                res.status(200).json({ message: 'success', donationforms: results.donations });
+                res.status(200).json({ message: 'Success', donationforms: results.donations });
             } else {
                 // Since the formid was specified we need to loop through and find the donation form with the matching id
                 for (const donation of results.donations) {
                     if (donation._id.toString() === formid) {
-                        res.status(200).json({ message: 'success', donationform: donation });
+                        res.status(200).json({ message: 'Success', donationform: donation });
                         return;
                     }
                 }
@@ -40,7 +40,7 @@ export const getDonationForms = (req: Request, res: Response) => {
 
 /**
  * Gets Ongoing Donation Forms by User
- * @route GET /donationform/ongoing?id={userid}
+ * @route GET /api/donationform/ongoing?id={userid}
  */
 export const getOngoingDonationForms = (req: Request, res: Response) => {
     const userid = req.query.id || null;
@@ -61,16 +61,16 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
                     donations.push(donation);
                 }
             }
-            res.status(200).json({ message: 'success', donationforms: donations });
+            res.status(200).json({ message: 'Success', donationforms: donations });
         })
         .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
 };
 
 /**
  * Posts Donation Form to Users Donation Forms
- * @route POST /donationform?id={userid}
+ * @route POST /api/donationform?id={userid}
  */
-export const postDonationForms = (req: Request, res: Response) => {
+export const postDonationForm = (req: Request, res: Response) => {
     const userid = req.query.id || null;
 
     // We need a userid because all donation forms are stored under the user documents
@@ -106,10 +106,68 @@ export const postDonationForms = (req: Request, res: Response) => {
         [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
         currentUser.donations.push(newDonationForm);
-        currentUser.save().then(() => {
-            res.status(200).json({ message: 'success', donationform: newDonationForm });
+        currentUser.save().then((updatedUser) => {
+            res.status(200).json({ message: 'Success', donationform: updatedUser.donations[updatedUser.donations.length - 1] });
         }).catch((err) => {
             res.status(500).json({ message: err.message, donationform: {} });
         });
     }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
-}
+};
+
+/**
+ * Updates Donation Form fields based on provided data
+ * @route PUT /api/donationform?id={userid}&donationFormID={formid}
+ */
+export const putDonationForm = (req: Request, res: Response) => {
+    const userid = req.query.id || null;
+
+    // We need a userid because all donation forms are stored under the user documents
+    if (userid == null) {
+        res.status(400).json({ message: 'No user id specified in request', donationform: {} });
+        return;
+    }
+
+    console.log('implement the rest soon!');
+};
+
+/**
+ * Deletes donation form from user and removes it from azure blob storage
+ * @route DELETE /api/donationform?id={userid}&donationFormID={formid}
+ */
+export const deleteDonationForm = (req: Request, res: Response) => {
+    const userid = req.query.id || null;
+    const formid = req.query.donationFormID || null;
+
+    // We need a userid because all donation forms are stored under the user documents
+    if (userid == null) {
+        res.status(400).json({ message: 'No user id specified in request', donationform: {} });
+        return;
+    }
+
+    if (formid == null) {
+        res.status(400).json({ message: 'No form id specified in request', donationform: {} });
+        return;
+    }
+
+    User.findById(userid).then((result) => {
+        // We need to loop through and find the donation form with the matching id
+        for (const [i, donation] of result.donations.entries()) {
+            if (donation._id.toString() === formid) {
+                result.donations.splice(i, 1);
+                deleteImageAzure(donation.imageLink).then(() => {
+                    result.save().then(() => {
+                        res.status(200).json({ message: 'Success', donationform: donation });
+                    }).catch((err:Error) => {
+                        res.status(400).json({ message: err.message, donationform: donation });
+                    });
+                }).catch((err:Error) => {
+                    res.status(400).json({ message: err.message, donationform: donation });
+                });
+                return;
+            }
+        }
+        res.status(400).json({ message: `Could not find donation form with id ${formid} for user ${userid}`, donationform: {} });
+    }).catch((err: Error) => {
+        res.status(400).json({ message: err.message, donationform: {} });
+    });
+};

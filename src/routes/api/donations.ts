@@ -8,5 +8,7 @@ const router = express.Router();
 */
 router.get('', donationFormController.getDonationForms);
 router.get('/ongoing', donationFormController.getOngoingDonationForms);
-router.post('', donationFormController.postDonationForms);
+router.post('', donationFormController.postDonationForm);
+router.put('', donationFormController.putDonationForm);
+router.delete('', donationFormController.deleteDonationForm);
 export default router;
