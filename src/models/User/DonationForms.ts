@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { Address, AddressSchema } from './Address';
-import {UserDocument} from "./index";
 
 export type DonationDishes = {
   _id?: string; // the unqiue id assigned to a donation dish. Let Mongo create this when you insert a document without any _id attribute

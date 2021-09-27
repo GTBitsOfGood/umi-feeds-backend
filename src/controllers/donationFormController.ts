@@ -169,7 +169,10 @@ export const putDonationForm = (req: Request, res: Response) => {
                 if (req.files !== undefined && req.files !== null && req.files.image !== undefined) {
                     try {
                         // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
+                        // This await will only run once because the loop returns in this if statement
+                        // eslint-disable-next-line no-await-in-loop
                         const newImageUrl = await uploadImageAzure(req.files.image);
+
                         // Store the old image url to be deleted if everything else works.  Otherwise we don't want to
                         //   delete it because it will still be the url for the image if the replacement doesn't happen
                         oldImageUrl = donation.imageLink;
