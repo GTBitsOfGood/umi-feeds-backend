@@ -1,5 +1,7 @@
+import { Error } from 'mongoose';
+
 import { Response, Request } from 'express';
-import { User } from '../models/User/index';
+import { User, UserDocument } from '../models/User/index';
 
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
 
@@ -19,7 +21,7 @@ export const getDonationForms = (req: Request, res: Response) => {
 
     // We can find a single user by using the userid
     User.findById(userid)
-        .then((results) => {
+        .then((results: UserDocument) => {
             // If the formid wasn't specified just return all of the donation forms
             if (formid === null) {
                 res.status(200).json({ message: 'Success', donationforms: results.donations });
@@ -53,7 +55,7 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
 
     // We can find a single user by using the userid
     User.findById(userid)
-        .then((results) => {
+        .then((results: UserDocument) => {
             const donations = [];
             // Loop through and find all ongoing donations
             for (const donation of results.donations) {
@@ -107,12 +109,12 @@ export const postDonationForm = (req: Request, res: Response) => {
             [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
             currentUser.donations.push(newDonationForm);
-            currentUser.save().then((updatedUser) => {
+            currentUser.save().then((updatedUser: UserDocument) => {
                 res.status(200).json({
                     message: 'Success',
                     donationform: updatedUser.donations[updatedUser.donations.length - 1]
                 });
-            }).catch((err) => {
+            }).catch((err: Error) => {
                 res.status(500).json({ message: err.message, donationform: {} });
             });
         } catch (err) {
