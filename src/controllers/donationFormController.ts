@@ -1,6 +1,8 @@
 import { Response, Request } from 'express';
 import { User } from '../models/User/index';
 
+import { uploadImageAzure } from '../util/azure-image';
+
 /**
  * Gets Donation Forms by User
  * @route GET /donationform?id={userid}[&donationFormID={formid}]
@@ -11,7 +13,7 @@ export const getDonationForms = (req: Request, res: Response) => {
 
     // We need a userid because all donation forms are stored under the user documents
     if (userid === null) {
-        res.status(500).json({ message: 'No user id specified in request' });
+        res.status(400).json({ message: 'No user id specified in request' });
         return;
     }
 
@@ -30,10 +32,10 @@ export const getDonationForms = (req: Request, res: Response) => {
                     }
                 }
                 // If none of the donation forms had the matching id then we need to report an error
-                res.status(500).json({ message: `Could not find donations form ${formid} for user ${userid}`, donationforms: [] });
+                res.status(400).json({ message: `Could not find donations form ${formid} for user ${userid}`, donationforms: [] });
             }
         })
-        .catch((error: Error) => res.status(500).json({ message: error.message, donationforms: [] }));
+        .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
 };
 
 /**
@@ -45,7 +47,7 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
 
     // We need a userid because all donation forms are stored under the user documents
     if (userid == null) {
-        res.status(500).json({ message: 'No user id specified in request' });
+        res.status(400).json({ message: 'No user id specified in request' });
         return;
     }
 
@@ -61,5 +63,53 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
             }
             res.status(200).json({ message: 'success', donationforms: donations });
         })
-        .catch((error: Error) => res.status(500).json({ message: error.message, donationforms: [] }));
+        .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
+};
+
+/**
+ * Posts Donation Form to Users Donation Forms
+ * @route POST /donationform?id={userid}
+ */
+export const postDonationForms = (req: Request, res: Response) => {
+    const userid = req.query.id || null;
+
+    // We need a userid because all donation forms are stored under the user documents
+    if (userid == null) {
+        res.status(400).json({ message: 'No user id specified in request', donationform: {} });
+        return;
+    }
+
+    // req.files.image should hold the uploaded image to forward to Azure
+    if (req.files === undefined || req.files.image === undefined) {
+        res.status(400).json({ message: 'No image included with key \'image\'', donationform: {} });
+        return;
+    }
+
+    // req.body.data should hold the donationform information to save to the user
+    if (req.body === undefined || req.body.data === undefined) {
+        res.status(400).json({ message: 'No data about donation provided with key \'data\'', donationform: {} });
+        return;
+    }
+
+    // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
+    Promise.all(
+        [
+            // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
+            uploadImageAzure(req.files.image),
+            User.findById(userid)
+        ]
+    ).then((values) => {
+        // Parse the 'data' from the request body to get the new donation form
+        const newDonationForm = JSON.parse(req.body.data);
+
+        let currentUser;
+        [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
+
+        currentUser.donations.push(newDonationForm);
+        currentUser.save().then(() => {
+            res.status(200).json({ message: 'success', donationform: newDonationForm });
+        }).catch((err) => {
+            res.status(500).json({ message: err.message, donationform: {} });
+        });
+    }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
 }
