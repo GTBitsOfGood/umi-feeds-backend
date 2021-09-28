@@ -118,6 +118,9 @@ export const postToken = (req: Request, res: Response) => {
     });
 };
 
+/**
+ * Updates user based on JSON data send with body
+ */
 export const updateUser = (req: Request, res: Response) => {
     const { id } = req.params;
     const { body } = req;
@@ -133,6 +136,9 @@ export const updateUser = (req: Request, res: Response) => {
     });
 };
 
+/**
+ * Deletes user based on id
+ */
 export const deleteUser = (req: Request, res: Response) => {
     const { id } = req.params;
     User.findByIdAndDelete(id).then(result => {
