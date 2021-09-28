@@ -5,6 +5,6 @@ const router = express.Router();
 /*
 * Code routes here for CRUD on users
 */
-router.put('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
+router.put('/user/:id', userController.updateUser);
+router.delete('/user/:id', userController.deleteUser);
 export default router;
