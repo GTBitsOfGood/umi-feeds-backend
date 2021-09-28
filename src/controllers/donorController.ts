@@ -2,7 +2,7 @@ import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 // eslint-disable-next-line camelcase
 import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { User } from '../models/User';
+import { DepreciatedUser } from '../models/User';
 import { Donation, DonationDocument } from '../models/Donation';
 // import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
@@ -14,7 +14,7 @@ import { isAdmin } from '../util/auth';
  * @route GET /donors
  */
 export const getDonors = (req: Request, res: Response) => {
-    User.find({ donorInfo: { $exists: true } })
+    DepreciatedUser.find({ donorInfo: { $exists: true } })
         .then(results => res.status(200).json({ donors: results }))
         .catch((error: Error) => res.status(500).json({ success: false, message: error.message }));
 };
@@ -24,7 +24,7 @@ export const getDonors = (req: Request, res: Response) => {
  * @route POST /donors
  */
 export const postDonors = (req: Request, res: Response) => {
-    const donor = new User(req.body);
+    const donor = new DepreciatedUser(req.body);
     return donor.save()
         .then(result => {
             return res.status(201).json({
@@ -44,7 +44,7 @@ export const postDonors = (req: Request, res: Response) => {
  */
 export const modifyDonor = (req: Request, res: Response) => {
     const id = req.params.donor_id;
-    return User.findByIdAndUpdate(id, req.body)
+    return DepreciatedUser.findByIdAndUpdate(id, req.body)
         .then(result => {
             return res.status(200).json({
                 donor: result
@@ -65,7 +65,7 @@ export const getDonorDetails = (req: Request, res: Response) => {
     }
 
     const id = req.params.donor_id;
-    return User.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
+    return DepreciatedUser.find({ _id: id, donorInfo: { $exists: true } }, 'donorInfo.name donorInfo.phone donorInfo.address donorInfo.latitude donorInfo.longitude')
         .then(result => { res.status(200).json({ donor: result }); })
         .catch((error: Error) => {
             res.status(400).json({ message: error.message });
@@ -111,7 +111,7 @@ export const postDonations = (req: Request, res: Response) => {
         });
         return;
     }
-    User.findOne({ sub: { $eq: payload.sub } }).then(user => {
+    DepreciatedUser.findOne({ sub: { $eq: payload.sub } }).then(user => {
         console.log(user);
         if (user != null && !user.admin) {
             jsonBody.donor = user._id;
@@ -144,7 +144,7 @@ export const postDonations = (req: Request, res: Response) => {
                     });
 
                 // Notify admins about the new donation
-                User.findById(jsonBody.donor).then(result => {
+                DepreciatedUser.findById(jsonBody.donor).then(result => {
                     userController.getPushTokens('admin').then((tokens: string[]) => {
                         sendBatchNotification(`New donation from ${result.name}!`, jsonBody.description, tokens);
                     });
@@ -239,7 +239,7 @@ export const getDonationDetails = (req: Request, res: Response) => {
  * @route POST /donations/:donation_id/reserve
  */
 export const reserveDonation = (req: Request, res: Response) => {
-    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+    DepreciatedUser.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
         const volunteerId = user.id;
 
@@ -254,7 +254,7 @@ export const reserveDonation = (req: Request, res: Response) => {
  * @route POST /donations/:donation_id/pick-up
  */
 export const pickUp = (req: Request, res: Response) => {
-    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+    DepreciatedUser.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
         Donation.findById(donationId).then(donation => {
             const donationVolunteer = donation.volunteer;
@@ -280,7 +280,7 @@ export const pickUp = (req: Request, res: Response) => {
  * @route POST /donations/:donation_id/drop-off
  */
 export const dropOff = (req: Request, res: Response) => {
-    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+    DepreciatedUser.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
         Donation.findById(donationId).then(donation => {
             const donationVolunteer = donation.volunteer;
@@ -308,7 +308,7 @@ export const dropOff = (req: Request, res: Response) => {
  * @route POST /donations/:donation_id/donor-confirm
  */
 export const confirmDonation = (req: Request, res: Response) => {
-    User.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+    DepreciatedUser.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const donationId = req.params.donation_id;
         const donationDonor = req.params.donor_id;
         const donorId = user.id;

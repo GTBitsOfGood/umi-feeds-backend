@@ -99,7 +99,7 @@ const userSchema = new mongoose.Schema<UserDocument>({
     },
     recipient: { type: Boolean, required: true },
     admin: { type: Boolean, required: true }, // in reality, admin access will be based on the Auth0 token, not this attribute
-    sub: { type: String, required: true, unique: true }
+    sub: { type: String, required: false, unique: false }
 }, { timestamps: true });
 
-export const User = mongoose.model<UserDocument>('User', userSchema);
+export const DepreciatedUser = mongoose.model<UserDocument>('DepreciatedUser', userSchema);
