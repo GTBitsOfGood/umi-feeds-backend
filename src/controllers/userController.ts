@@ -117,3 +117,30 @@ export const postToken = (req: Request, res: Response) => {
         });
     });
 };
+
+export const updateUser = (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { body } = req;
+    User.findByIdAndUpdate(id, body).then(result => {
+        return res.status(201).json({
+            message: 'success',
+        });
+    }).catch(error => {
+        return res.status(400).json({
+            message: error.message
+        });
+    });
+};
+
+export const deleteUser = (req: Request, res: Response) => {
+    const { id } = req.params;
+    User.findByIdAndDelete(id).then(result => {
+        return res.status(201).json({
+            message: 'Success'
+        });
+    }).catch(error => {
+        return res.status(400).json({
+            message: error.message
+        });
+    });
+};

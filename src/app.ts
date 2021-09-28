@@ -20,6 +20,8 @@ import MainRoutes from './routes/index';
 import donorRouter from './routes/donors';
 import userRouter from './routes/users';
 
+import newUserRouter from './routes/api/user';
+
 const MongoStore = mongo(session);
 
 // Create Express server
@@ -85,8 +87,10 @@ app.post('/testpush', (req, res) => {
     // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]
     sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
 });
-app.use('/api', donorRouter);
-app.use('/api', userRouter);
+
+app.use('/api', newUserRouter);
+// app.use('/api', donorRouter);
+// app.use('/api', userRouter);
 
 // Work off of this one. the others will get retired soon
 app.use('/', MainRoutes);
