@@ -1,8 +1,8 @@
 import { Response, Request } from 'express';
 import mongoose from 'mongoose';
 import { UploadedFile } from 'express-fileupload';
-import { User } from '../models/User';
-import { uploadImageAzure } from '../util/azure-image';
+import { User, UserDocument } from '../models/User/index';
+import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
 
 /**
  * Gets Dishes based on User and Dish id
@@ -16,7 +16,7 @@ export const getDishes = (req: Request, res: Response) => {
 
     if (userId && dishId) {
         return User.findOne({ _id: userId, 'dishes._id': dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
-            .then(result => {
+            .then((result: UserDocument) => {
                 if (result) {
                     res.status(200).send(result);
                 } else {
@@ -28,7 +28,7 @@ export const getDishes = (req: Request, res: Response) => {
             });
     } else if (userId) {
         return User.findOne({ _id: userId, dishes: { $exists: true } }, { _id: 0, dishes: 1 })
-            .then(result => {
+            .then((result: UserDocument) => {
                 if (result) {
                     res.status(200).send(result);
                 } else {
@@ -74,13 +74,13 @@ export const postDish = (req: Request, res: Response) => {
     }
 
     Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile))
-        .then((url) => {
+        .then((url: string) => {
             const dishBody = JSON.parse(req.body.json);
             dishBody._id = mongoose.Types.ObjectId();
             dishBody.imageLink = url;
 
             return User.updateOne({ _id: userId }, { $push: { dishes: dishBody } })
-                .then(result => {
+                .then((result: mongoose.UpdateWriteOpResult) => {
                     if (result.nModified !== 0) {
                         res.status(201).json({ message: 'Success' });
                     } else {
@@ -131,14 +131,26 @@ export const updateDish = (req: Request, res: Response) => {
         return;
     }
 
-    Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile)).then((url) => {
+    // Removes old image
+    User.findOne({ _id: userId, 'dishes._id': dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
+        .then((result: UserDocument) => {
+            const oldImageUrl:string = result.dishes[0].imageLink;
+            deleteImageAzure(oldImageUrl)
+                .catch((err: Error) => {
+                    res.status(400).json({ message: err.message });
+                });
+        }).catch((error: Error) => {
+            res.status(400).json({ message: error.message });
+        });
+
+    Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile)).then((url: string) => {
         const dishBody = JSON.parse(req.body.json);
         dishBody._id = dishId;
         dishBody.imageLink = url;
 
         return User.updateOne({ _id: userId, 'dishes._id': dishId }, { $set: { 'dishes.$': dishBody } })
-            .then(result => {
-                if (result.nModified !== 0) {
+            .then((result: mongoose.UpdateWriteOpResult) => {
+                if (result.nModified === 1) {
                     res.status(201).json({ message: 'Success' });
                 } else {
                     res.status(404).json({ message: 'The specified user or dish does not exist.' });
@@ -162,9 +174,21 @@ export const deleteDish = (req: Request, res: Response) => {
     const dishId = req.query.donationFormID;
 
     if (userId && dishId) {
+        // Removes old image
+        User.findOne({ _id: userId, 'dishes._id': dishId }, { _id: 0, dishes: { $elemMatch: { _id: dishId } } })
+            .then((result: UserDocument) => {
+                const oldImageUrl:string = result.dishes[0].imageLink;
+                deleteImageAzure(oldImageUrl)
+                    .catch((err: Error) => {
+                        res.status(400).json({ message: err.message });
+                    });
+            }).catch((error: Error) => {
+                res.status(400).json({ message: error.message });
+            });
+
         return User.updateOne({ _id: userId, 'dishes._id': dishId }, { $pull: { dishes: { _id: dishId } } })
-            .then(result => {
-                if (result.nModified !== 0) {
+            .then((result: mongoose.UpdateWriteOpResult) => {
+                if (result.nModified === 1) {
                     res.status(200).json({ message: 'Success' });
                 } else {
                     res.status(404).json({ message: 'This specified user or dish does not exist.' });

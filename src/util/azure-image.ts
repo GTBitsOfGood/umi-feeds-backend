@@ -1,6 +1,6 @@
 import intoStream from 'into-stream';
 import { UploadedFile } from 'express-fileupload';
-import { BlobServiceClient, StorageSharedKeyCredential, newPipeline } from '@azure/storage-blob';
+import { BlobServiceClient, StorageSharedKeyCredential, newPipeline, BlobDeleteResponse } from '@azure/storage-blob';
 
 const containerName = 'image-container';
 const ONE_MEGABYTE = 1024 * 1024;
@@ -36,4 +36,10 @@ export async function uploadImageAzure(file: UploadedFile) : Promise<string> {
                 resolve(blockBlobClient.url);
             }).catch(reject);
     });
+}
+
+export async function deleteImageAzure(uri: string) : Promise<BlobDeleteResponse> {
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blockBlobClient = containerClient.getBlockBlobClient(uri.split(`${containerName}/`)[1]);
+    return blockBlobClient.delete();
 }
