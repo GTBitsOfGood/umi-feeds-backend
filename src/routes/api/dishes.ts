@@ -5,8 +5,8 @@ const router = express.Router();
 /*
 * Code routes here for CRUD on dishes
 */
-router.get('/dishes', dishesController.getDishes);
-router.post('/dishes', dishesController.postDish);
-router.put('/dishes', dishesController.updateDish);
-router.delete('/dishes', dishesController.deleteDish);
+router.get('', dishesController.getDish);
+router.post('', dishesController.postDish);
+router.put('', dishesController.updateDish);
+router.delete('', dishesController.deleteDish);
 export default router;

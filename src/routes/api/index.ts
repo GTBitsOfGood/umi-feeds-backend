@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.use('/user', userRoute);
 
-router.use('/', DishRoutes);
+router.use('/dishes', DishRoutes);
 
 router.use('/donationform', DonationFormRoutes);
 

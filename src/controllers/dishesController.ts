@@ -5,12 +5,12 @@ import { User, UserDocument } from '../models/User/index';
 import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
 
 /**
- * Gets Dishes based on User and Dish id
+ * Gets Dishes based on User Id and get Dish by User id and Dish Id
  * @route GET /dishes?id=<string>
  * @route GET /dishes?id=<string>&dishID=<string>
  *
  * */
-export const getDishes = (req: Request, res: Response) => {
+export const getDish = (req: Request, res: Response) => {
     const userId = req.query.id;
     const dishId = req.query.dishID;
 
