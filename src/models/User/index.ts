@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema<UserDocument>({
     pickupAddresses: { type: [AddressSchema], required: true },
     dishes: { type: [DishSchema], required: true },
     donations: { type: [DonationFormSchema], required: true },
+
 }, { timestamps: true });
 
 export const User = mongoose.model<UserDocument>('User', userSchema);
