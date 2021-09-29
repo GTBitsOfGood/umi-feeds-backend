@@ -49,6 +49,5 @@ export async function uploadImageAzure(file: UploadedFile) : Promise<string> {
 export async function deleteImageAzure(uri: string) : Promise<BlobDeleteResponse> {
     const containerClient = blobServiceClient.getContainerClient(containerName);
     const blockBlobClient = containerClient.getBlockBlobClient(uri.split(`${containerName}/`)[1]);
-
     return blockBlobClient.delete();
 }
