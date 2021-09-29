@@ -1,4 +1,4 @@
-// DO NOT USE ANYMORE
+// DO NOT USE ANYTHING IN THIS FILE ANYMORE
 
 import mongoose from 'mongoose';
 
@@ -54,7 +54,7 @@ export type MockUserDocument = mongoose.Document & {
     donations: DonationForm[];
 }
 
-export type UserDocument = mongoose.Document & {
+export type UserDocumentDeprecated = mongoose.Document & {
     name: string;
     email: string; // later down the line, we will make this optional for recipients
     pushTokens: string[]; // expo push tokens
@@ -75,7 +75,7 @@ export type UserDocument = mongoose.Document & {
     sub: string;
 };
 
-const userSchema = new mongoose.Schema<UserDocument>({
+const userSchemaDeprecated = new mongoose.Schema<UserDocumentDeprecated>({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true }, // later down the line, we will make this optional for recipients
     pushTokens: { type: [String], required: true }, // expo push tokens
@@ -102,4 +102,4 @@ const userSchema = new mongoose.Schema<UserDocument>({
     sub: { type: String, required: false, unique: false }
 }, { timestamps: true });
 
-export const DepreciatedUser = mongoose.model<UserDocument>('DepreciatedUser', userSchema);
+export const DepreciatedUser = mongoose.model<UserDocumentDeprecated>('DepreciatedUser', userSchemaDeprecated);
