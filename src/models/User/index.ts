@@ -33,4 +33,4 @@ const userSchema = new mongoose.Schema<UserDocument>({
     donations: { type: [DonationFormSchema], required: true },
 }, { timestamps: true });
 
-export const User = mongoose.model<UserDocument>('User', userSchema);
+export const User = mongoose.model<UserDocument>('users', userSchema);

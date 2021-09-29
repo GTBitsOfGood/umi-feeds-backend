@@ -103,7 +103,6 @@ app.get('/test-auth0-security', checkJwt, (req, res) => {
     // console.log(req);
     res.send('Secured');
 });
-
 app.get('/test-admin-access', userJwt, checkAdmin, (req, res) => {
     res.send('Secured');
 });

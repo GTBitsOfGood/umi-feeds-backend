@@ -99,7 +99,7 @@ const userSchemaDeprecated = new mongoose.Schema<UserDocumentDeprecated>({
     },
     recipient: { type: Boolean, required: true },
     admin: { type: Boolean, required: true }, // in reality, admin access will be based on the Auth0 token, not this attribute
-    sub: { type: String, required: true, unique: true }
+    sub: { type: String, required: false, unique: false }
 }, { timestamps: true });
 
-export const UserDeprecated = mongoose.model<UserDocumentDeprecated>('UserDeprecated', userSchemaDeprecated);
+export const DepreciatedUser = mongoose.model<UserDocumentDeprecated>('DepreciatedUser', userSchemaDeprecated);
