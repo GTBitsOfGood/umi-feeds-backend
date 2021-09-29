@@ -1,7 +1,7 @@
 import { Response, Request } from 'express';
 // eslint-disable-next-line camelcase
 import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { UserDeprecated } from '../models/User';
+import { DepreciatedUser } from '../models/User';
 
 type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
 
@@ -11,19 +11,19 @@ type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
  */
 const queryOnUserType = (userType: UserType) => {
     if (userType === 'donor') {
-        return UserDeprecated.find({ donorInfo: { $exists: true } });
+        return DepreciatedUser.find({ donorInfo: { $exists: true } });
     }
     if (userType === 'volunteer') {
-        return UserDeprecated.find({ volunteerInfo: { $exists: true } });
+        return DepreciatedUser.find({ volunteerInfo: { $exists: true } });
     }
     if (userType === 'recipient') {
-        return UserDeprecated.find({ recipient: { $eq: true } });
+        return DepreciatedUser.find({ recipient: { $eq: true } });
     }
     if (userType === 'admin') {
-        return UserDeprecated.find({ admin: { $eq: true } });
+        return DepreciatedUser.find({ admin: { $eq: true } });
     }
     if (userType === 'any') {
-        return UserDeprecated.find({});
+        return DepreciatedUser.find({});
     }
     throw new Error(`Invalid user type: ${userType}`);
 };
@@ -71,7 +71,7 @@ export const getTokens = (req: Request, res: Response) => {
  * @route POST /users
  */
 export const postUsers = (req: Request, res: Response) => {
-    const user = new UserDeprecated(req.body);
+    const user = new DepreciatedUser(req.body);
     return user.save()
         .then(result => {
             return res.status(201).json({
@@ -90,7 +90,7 @@ export const postUsers = (req: Request, res: Response) => {
  * @route POST /token
  */
 export const postToken = (req: Request, res: Response) => {
-    UserDeprecated.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
+    DepreciatedUser.findOne({ sub: { $eq: (<JwtPayload>jwt_decode(req.headers.authorization)).sub } }).then(user => {
         const tokens = user.pushTokens;
         let hasToken = false;
         for (let i = 0; i < tokens.length; i++) {
