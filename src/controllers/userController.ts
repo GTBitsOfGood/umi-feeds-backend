@@ -120,6 +120,10 @@ export const postToken = (req: Request, res: Response) => {
 
 /**
  * Updates user based on JSON data send with body
+ * @route PUT /api/user/:id
+ * @param id string id of user to update
+ * @param req.body JSON data to update user with
+ * @return JSON with either an error or "success"
  */
 export const updateUser = (req: Request, res: Response) => {
     const { id } = req.params;
@@ -127,7 +131,7 @@ export const updateUser = (req: Request, res: Response) => {
 
     User.findByIdAndUpdate(id, body).then(result => {
         return res.status(201).json({
-            message: 'success',
+            message: 'Success',
         });
     }).catch(error => {
         return res.status(400).json({
@@ -138,6 +142,9 @@ export const updateUser = (req: Request, res: Response) => {
 
 /**
  * Deletes user based on id
+ * @route DELETE /api/user/:id
+ * @param id string specifying id of user to delete
+ * @return JSON with either an error or "success"
  */
 export const deleteUser = (req: Request, res: Response) => {
     const { id } = req.params;
