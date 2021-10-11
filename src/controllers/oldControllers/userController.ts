@@ -1,7 +1,7 @@
 import { Response, Request } from 'express';
 // eslint-disable-next-line camelcase
 import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { DepreciatedUser } from '../models/User';
+import { DepreciatedUser } from '../../models/oldModels/User';
 
 type UserType = 'donor' | 'volunteer' | 'recipient' | 'admin' | 'any';
 

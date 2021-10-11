@@ -13,7 +13,7 @@ export type UserDocument = mongoose.Document & {
   pushTokens: string[];
   isAdmin: boolean;
   auth0AccessToken: string;
-  roles: string[];
+  roles: string[]; // 'donor' | 'volunteer' | 'recipient'
   pickupAddresses: Address[];
   dishes: Dish[];
   donations: DonationForm[];

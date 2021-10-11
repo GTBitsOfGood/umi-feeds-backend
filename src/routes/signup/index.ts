@@ -8,6 +8,6 @@ const router = express.Router();
 * Code routes here for signup
 */
 
-router.post('/', userJwt, signupController.postUserSignUp);
+router.post('/', signupController.postUserSignUp);
 
 export default router;
