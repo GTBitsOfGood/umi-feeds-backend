@@ -2,12 +2,12 @@ import { Response, Request } from 'express';
 import { Document } from 'mongoose';
 // eslint-disable-next-line camelcase
 import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { DepreciatedUser } from '../models/User';
-import { Donation, DonationDocument } from '../models/Donation';
+import { DepreciatedUser } from '../../models/oldModels/User';
+import { Donation, DonationDocument } from '../../models/oldModels/Donation';
 // import { uploadFileOrFiles } from '../util/image';
 import * as userController from './userController';
-import { sendBatchNotification } from '../util/notifications';
-import { isAdmin } from '../util/auth';
+import { sendBatchNotification } from '../../util/notifications';
+import { isAdmin } from '../../util/auth';
 
 /**
  * Gets Donors
