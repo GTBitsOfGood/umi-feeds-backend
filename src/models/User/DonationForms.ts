@@ -79,4 +79,4 @@ export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocumen
   volunteerLockTime: { type: Date, required: true },
 }, { timestamps: true });
 
-export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingDonations', OngoingDonationsSchema);
+export const OngoingDonation = mongoose.model<OngoingDonationDocument>('OngoingDonations', OngoingDonationsSchema);

@@ -1,9 +1,8 @@
-import { Error } from 'mongoose';
-
+import mongoose, { Error } from 'mongoose';
 import { Response, Request } from 'express';
 import { User, UserDocument } from '../models/User/index';
-
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
+import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
 
 /**
  * Gets Donation Forms by User
@@ -72,7 +71,7 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
  * Posts Donation Form to Users Donation Forms
  * @route POST /api/donationform?id={userid}
  */
-export const postDonationForm = (req: Request, res: Response) => {
+export const postDonationForm = async (req: Request, res: Response) => {
     const userid = req.query.id || null;
 
     // We need a userid because all donation forms are stored under the user documents
@@ -93,6 +92,11 @@ export const postDonationForm = (req: Request, res: Response) => {
         return;
     }
 
+    // Set up transaction session
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+
     // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
     Promise.all(
         [
@@ -100,7 +104,7 @@ export const postDonationForm = (req: Request, res: Response) => {
             uploadImageAzure(req.files.image),
             User.findById(userid)
         ]
-    ).then((values) => {
+    ).then(async (values) => {
         try {
             // Parse the 'data' from the request body to get the new donation form
             const newDonationForm = JSON.parse(req.body.data);
@@ -109,7 +113,7 @@ export const postDonationForm = (req: Request, res: Response) => {
             [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
             currentUser.donations.push(newDonationForm);
-            currentUser.save().then((updatedUser: UserDocument) => {
+            await currentUser.save().then((updatedUser: UserDocument) => {
                 res.status(200).json({
                     message: 'Success',
                     donationform: updatedUser.donations[updatedUser.donations.length - 1]
@@ -117,11 +121,29 @@ export const postDonationForm = (req: Request, res: Response) => {
             }).catch((err: Error) => {
                 res.status(500).json({ message: err.message, donationform: {} });
             });
+
+            // Adds entry to OngoingDonations
+            const ongoingDonation = new OngoingDonation(newDonationForm);
+            await ongoingDonation.save().then((donation: OngoingDonationDocument) => {
+                res.status(200).json({
+                    message: 'Success',
+                    //donationform: updatedUser.donations[updatedUser.donations.length - 1]
+                });
+            }).catch((err: Error) => {
+                res.status(500).json({ message: err.message });
+            });
         } catch (err) {
             res.status(400).json({ message: err.message, donationform: {} });
         }
     }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
-};
+    await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        session.endSession();
+    }
+};  
 
 /**
  * Updates Donation Form fields based on provided data

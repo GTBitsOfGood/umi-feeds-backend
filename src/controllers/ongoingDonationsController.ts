@@ -2,7 +2,7 @@ import { Response, Request } from 'express';
 import mongoose from 'mongoose';
 import { UploadedFile } from 'express-fileupload';
 //import { User, UserDocument } from '../models/User/index';
-import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms'
+import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
 import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
 
 
