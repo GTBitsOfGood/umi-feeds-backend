@@ -6,12 +6,8 @@ import { User, UserDocument } from '../models/User/index';
  * @route GET /user/businessName/:businessName
  * */
 export const getUserByBusinessName = (req: Request, res: Response) => {
+    // businessName should never be null because it is a path variable
     const { businessName } = req.params;
-
-    if (!businessName) {
-        res.status(400).json({ message: 'Missing business name for request.' });
-        return;
-    }
 
     User.findOne({ businessName })
         .then((result: UserDocument) => {
