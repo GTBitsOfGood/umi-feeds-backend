@@ -4,6 +4,7 @@ import { Response, Request } from 'express';
 import { User, UserDocument } from '../models/User/index';
 
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
+import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
 
 /**
  * Gets Donation Forms by User
@@ -105,11 +106,27 @@ export const postDonationForm = (req: Request, res: Response) => {
             // Parse the 'data' from the request body to get the new donation form
             const newDonationForm = JSON.parse(req.body.data);
 
-            let currentUser;
+            let currentUser:UserDocument;
             [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
             currentUser.donations.push(newDonationForm);
             currentUser.save().then((updatedUser: UserDocument) => {
+                // Send a push notification to all the admins notifying them of the new donation
+                User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
+                    if (err) {
+                        res.status(500).json({ message: err.message, donationform: {} });
+                        return;
+                    }
+                    let tokens:string[] = [];
+                    // Collect the tokens of all the admins
+                    for (const user of users) {
+                        tokens = tokens.concat(user.pushTokens);
+                    }
+
+                    sendBatchNotification(`New Donation from ${currentUser.businessName}`,
+                        req.body.description ?? 'Check app for details',
+                        tokens);
+                });
                 res.status(200).json({
                     message: 'Success',
                     donationform: updatedUser.donations[updatedUser.donations.length - 1]
