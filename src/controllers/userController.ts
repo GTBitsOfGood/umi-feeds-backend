@@ -59,6 +59,7 @@ export const getUsersByRoles = (req: Request, res: Response) => {
         .catch((error: Error) => {
             res.status(400).json({ message: error.message });
         });
+};
 
 export const updateUser = (req: Request, res: Response) => {
     const { id } = req.params;
