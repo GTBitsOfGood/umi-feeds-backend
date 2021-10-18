@@ -12,7 +12,7 @@ import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
  *
  **/
  export const getOngoingDonations = (req: Request, res: Response) => {
-    OngoingDonation.find()
+    OngoingDonation.find({})
     .then((results : OngoingDonationDocument[]) => 
         res.status(200).json({ "Ongoing Donations" : results }))
     .catch((error: Error) => 
@@ -32,7 +32,7 @@ import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
         res.status(400).json({ message: 'Missing ongoing donation id' });
         return;
     }
-    if (!req.files.donationImage) {
+    if (!req.files || !req.files.donationImage) {
         res.status(400).json({ message: 'No image attached to key "donationImage" for ongoing donation.' });
         return;
     }
@@ -64,7 +64,7 @@ import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
         const donationBody = JSON.parse(req.body.json);
         donationBody._id = donationId;
         donationBody.imageLink = url;
-        return OngoingDonation.findOneAndUpdate({ _id: donationId }, donationBody)
+        return OngoingDonation.findOneAndUpdate({ _id: donationId }, donationBody, {useFindAndModify: false})
             .then((result: OngoingDonationDocument) => {
                 if (result) {
                     res.status(201).json({ message: 'Success' });
@@ -105,7 +105,4 @@ import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
         res.status(400).json({ message: error.message });
     });
  }
-
-
  
-

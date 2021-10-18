@@ -113,7 +113,10 @@ export const postDonationForm = async (req: Request, res: Response) => {
             [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
             currentUser.donations.push(newDonationForm);
-            await currentUser.save().then((updatedUser: UserDocument) => {
+            await currentUser.save()
+            .then((updatedUser: UserDocument) => {
+                const donationId = updatedUser.donations[updatedUser.donations.length - 1]._id;
+                newDonationForm._id = donationId;
                 res.status(200).json({
                     message: 'Success',
                     donationform: updatedUser.donations[updatedUser.donations.length - 1]
@@ -122,14 +125,18 @@ export const postDonationForm = async (req: Request, res: Response) => {
                 res.status(500).json({ message: err.message, donationform: {} });
             });
 
+
             // Adds entry to OngoingDonations
             const ongoingDonation = new OngoingDonation(newDonationForm);
-            await ongoingDonation.save().then((donation: OngoingDonationDocument) => {
+            await ongoingDonation.save()
+            /*
+            .then((donation: OngoingDonationDocument) => {
                 res.status(200).json({
                     message: 'Success',
                     //donationform: updatedUser.donations[updatedUser.donations.length - 1]
                 });
-            }).catch((err: Error) => {
+            })*/
+            .catch((err: Error) => {
                 res.status(500).json({ message: err.message });
             });
         } catch (err) {

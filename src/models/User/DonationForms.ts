@@ -63,7 +63,7 @@ export type OngoingDonationDocument = mongoose.Document & {
 }
 
 export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
-  ongoing: { type: Boolean, required: true },
+  ongoing: { type: Boolean, required: true, default: true },
   status: {
       type: String,
       enum: ['pending pickup', 'picked up', 'dropped off'],
@@ -79,4 +79,4 @@ export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocumen
   volunteerLockTime: { type: Date, required: true },
 }, { timestamps: true });
 
-export const OngoingDonation = mongoose.model<OngoingDonationDocument>('OngoingDonations', OngoingDonationsSchema);
+export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);
