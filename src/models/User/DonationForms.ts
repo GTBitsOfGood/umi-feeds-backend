@@ -45,7 +45,6 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     volunteerLockTime: { type: Date, required: true },
 }, { timestamps: true });
 
-
 export type OngoingDonationDocument = mongoose.Document & {
   _id?: string; // the unqiue id assigned to a donation form. Let Mongo create this when you insert a document without any _id attribute
   ongoing: boolean;
@@ -63,20 +62,20 @@ export type OngoingDonationDocument = mongoose.Document & {
 }
 
 export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
-  ongoing: { type: Boolean, required: true, default: true },
-  status: {
-      type: String,
-      enum: ['pending pickup', 'picked up', 'dropped off'],
-  },
-  imageLink: { type: String, required: true },
-  dishes: { type: [DonationDishesSchema], required: true },
-  pickupAddress: { type: AddressSchema, required: true },
-  pickupInstructions: { type: String, required: true },
-  pickupStartTime: { type: Date, required: true },
-  pickupEndTime: { type: Date, required: true },
-  lockedByVolunteer: { type: Boolean, required: true },
-  confirmPickUpTime: { type: Date, required: true },
-  volunteerLockTime: { type: Date, required: true },
+    ongoing: { type: Boolean, required: true, default: true },
+    status: {
+        type: String,
+        enum: ['pending pickup', 'picked up', 'dropped off'],
+    },
+    imageLink: { type: String, required: true },
+    dishes: { type: [DonationDishesSchema], required: true },
+    pickupAddress: { type: AddressSchema, required: true },
+    pickupInstructions: { type: String, required: true },
+    pickupStartTime: { type: Date, required: true },
+    pickupEndTime: { type: Date, required: true },
+    lockedByVolunteer: { type: Boolean, required: true },
+    confirmPickUpTime: { type: Date, required: true },
+    volunteerLockTime: { type: Date, required: true },
 }, { timestamps: true });
 
 export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);

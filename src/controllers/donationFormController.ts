@@ -2,7 +2,7 @@ import mongoose, { Error } from 'mongoose';
 import { Response, Request } from 'express';
 import { User, UserDocument } from '../models/User/index';
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
-import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
+import { OngoingDonation } from '../models/User/DonationForms';
 
 /**
  * Gets Donation Forms by User
@@ -96,61 +96,52 @@ export const postDonationForm = async (req: Request, res: Response) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
+        // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
+        Promise.all(
+            [
+                // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
+                uploadImageAzure(req.files.image),
+                User.findById(userid)
+            ]
+        ).then(async (values) => {
+            try {
+                // Parse the 'data' from the request body to get the new donation form
+                const newDonationForm = JSON.parse(req.body.data);
 
-    // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
-    Promise.all(
-        [
-            // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-            uploadImageAzure(req.files.image),
-            User.findById(userid)
-        ]
-    ).then(async (values) => {
-        try {
-            // Parse the 'data' from the request body to get the new donation form
-            const newDonationForm = JSON.parse(req.body.data);
+                let currentUser;
+                [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
-            let currentUser;
-            [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
+                currentUser.donations.push(newDonationForm);
+                await currentUser.save()
+                    .then((updatedUser: UserDocument) => {
+                        const donationId = updatedUser.donations[updatedUser.donations.length - 1]._id;
+                        newDonationForm._id = donationId;
+                        res.status(200).json({
+                            message: 'Success',
+                            donationform: updatedUser.donations[updatedUser.donations.length - 1]
+                        });
+                    }).catch((err: Error) => {
+                        res.status(500).json({ message: err.message, donationform: {} });
+                    });
 
-            currentUser.donations.push(newDonationForm);
-            await currentUser.save()
-            .then((updatedUser: UserDocument) => {
-                const donationId = updatedUser.donations[updatedUser.donations.length - 1]._id;
-                newDonationForm._id = donationId;
-                res.status(200).json({
-                    message: 'Success',
-                    donationform: updatedUser.donations[updatedUser.donations.length - 1]
-                });
-            }).catch((err: Error) => {
-                res.status(500).json({ message: err.message, donationform: {} });
-            });
-
-
-            // Adds entry to OngoingDonations
-            const ongoingDonation = new OngoingDonation(newDonationForm);
-            await ongoingDonation.save()
-            /*
-            .then((donation: OngoingDonationDocument) => {
-                res.status(200).json({
-                    message: 'Success',
-                    //donationform: updatedUser.donations[updatedUser.donations.length - 1]
-                });
-            })*/
-            .catch((err: Error) => {
-                res.status(500).json({ message: err.message });
-            });
-        } catch (err) {
-            res.status(400).json({ message: err.message, donationform: {} });
-        }
-    }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
-    await session.commitTransaction();
+                // Adds entry to OngoingDonations
+                const ongoingDonation = new OngoingDonation(newDonationForm);
+                await ongoingDonation.save()
+                    .catch((err: Error) => {
+                        res.status(500).json({ message: err.message });
+                    });
+            } catch (err) {
+                res.status(400).json({ message: err.message, donationform: {} });
+            }
+        }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
+        await session.commitTransaction();
     } catch (err) {
         await session.abortTransaction();
         throw err;
     } finally {
         session.endSession();
     }
-};  
+};
 
 /**
  * Updates Donation Form fields based on provided data
