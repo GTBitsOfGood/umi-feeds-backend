@@ -61,6 +61,60 @@ export const getUsersByRoles = (req: Request, res: Response) => {
         });
 };
 
+/**
+ * Adds a pickup address to the user object
+ * @route POST /user/address/:id
+ */
+export const addPickupAddress = async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { body } = req;
+
+    try {
+        const user = await User.findById(userId);
+        const newUser = await user.update({ pickupAddresses: [...user.pickupAddresses, body] });
+        res.status(200).send(newUser);
+    } catch (e) {
+        res.status(500).send({
+            message: `Error: ${e.message}`
+        });
+    }
+};
+
+export const editPickupAddress = (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { body } = req;
+    try {
+        await User.findByIdAndUpdate(userId, body);
+        // TODO: finish, add docblock comments
+    }
+};
+
+export const deletePickupAddress = async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { addressId } = req.query;
+
+    try {
+        const user = await User.findById(userId);
+        const newPickupAddresses = user.pickupAddresses.filter(a => {
+            console.log(a._id, addressId, a._id === addressId);
+            // must use `equals` function, === does not work with id
+            return !a._id.equals(addressId);
+        });
+        const newUser = await user.update({
+            pickupAddresses: newPickupAddresses
+        });
+        res.status(200).send(newUser);
+    } catch (e) {
+        res.status(500).send({
+            message: `Error: ${e.message}`
+        });
+    }
+};
+
+/**
+ * Updates a user to a new user object sent in the body of the request
+ * @route PUT /user/:id
+ */
 export const updateUser = (req: Request, res: Response) => {
     const { id } = req.params;
     const { body } = req;
