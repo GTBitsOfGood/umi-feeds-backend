@@ -81,10 +81,11 @@ export const postDonationForm = async (req: Request, res: Response) => {
     }
 
     // req.files.image should hold the uploaded image to forward to Azure
+    /*
     if (req.files === undefined || req.files === null || req.files.image === undefined) {
         res.status(400).json({ message: 'No image included with key \'image\'', donationform: {} });
         return;
-    }
+    } */
 
     // req.body.data should hold the donationform information to save to the user
     if (req.body === undefined || req.body === null || req.body.data === undefined) {
@@ -94,20 +95,22 @@ export const postDonationForm = async (req: Request, res: Response) => {
 
     // Set up transaction session
     const session = await mongoose.startSession();
-    session.startTransaction();
+
     try {
+        session.startTransaction();
         // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
         Promise.all(
             [
                 // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
                 uploadImageAzure(req.files.image),
-                User.findById(userid)
+                User.findById(userid).session(session)
             ]
         ).then(async (values) => {
             try {
                 // Parse the 'data' from the request body to get the new donation form
                 const newDonationForm = JSON.parse(req.body.data);
 
+                console.log(values);
                 let currentUser;
                 [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
 
@@ -116,31 +119,44 @@ export const postDonationForm = async (req: Request, res: Response) => {
                     .then((updatedUser: UserDocument) => {
                         const donationId = updatedUser.donations[updatedUser.donations.length - 1]._id;
                         newDonationForm._id = donationId;
+                        /*
                         res.status(200).json({
                             message: 'Success',
                             donationform: updatedUser.donations[updatedUser.donations.length - 1]
-                        });
+                        }); */
                     }).catch((err: Error) => {
                         res.status(500).json({ message: err.message, donationform: {} });
                     });
-
+                
+                //throw Error;
                 // Adds entry to OngoingDonations
-                const ongoingDonation = new OngoingDonation(newDonationForm);
+                //const ongoingDonation = new OngoingDonation(newDonationForm);
+                await OngoingDonation.create(newDonationForm,  { session: session })
+                .catch((err: Error) => {
+                    res.status(500).json({ message: err.message });
+                });
+                /*
                 await ongoingDonation.save()
                     .catch((err: Error) => {
                         res.status(500).json({ message: err.message });
-                    });
+                    }); */
+
             } catch (err) {
                 res.status(400).json({ message: err.message, donationform: {} });
             }
-        }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
-        await session.commitTransaction();
+        }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }))
+        //await session.commitTransaction();
+        console.log("done");
+        /*
+        res.status(200).json({
+            message: 'Success'
+        }); */
     } catch (err) {
-        await session.abortTransaction();
+        //await session.abortTransaction();
         throw err;
     } finally {
         session.endSession();
-    }
+    } 
 };
 
 /**
