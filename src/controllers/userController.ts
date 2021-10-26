@@ -70,25 +70,46 @@ export const addPickupAddress = async (req: Request, res: Response) => {
     const { body } = req;
 
     try {
-        const user = await User.findById(userId);
-        const newUser = await user.update({ pickupAddresses: [...user.pickupAddresses, body] });
-        res.status(200).send(newUser);
+        const updatedUser = await User.findByIdAndUpdate(userId, { $push: { pickupAddresses: body } }, { new: true });
+        res.status(200).send(updatedUser);
     } catch (e) {
+        console.log(e);
         res.status(500).send({
             message: `Error: ${e.message}`
         });
     }
 };
 
-export const editPickupAddress = (req: Request, res: Response) => {
+/**
+ * Updates an existing pickup address
+ * @route PUT /user/address/:id with the body the edited address including the id
+ */
+export const editPickupAddress = async (req: Request, res: Response) => {
     const userId = req.params.id;
     const { body } = req;
+    console.log(body);
     try {
-        await User.findByIdAndUpdate(userId, body);
-        // TODO: finish, add docblock comments
+        const oldUser = await User.findById(userId);
+        const newPickupAddresses = oldUser.pickupAddresses.map(address => {
+            if (address._id.toString() === req.body._id.toString()) {
+                return body;
+            }
+            return address;
+        });
+        const updatedUser = await User.findByIdAndUpdate(userId, { pickupAddresses: newPickupAddresses }, { new: true });
+        res.status(200).send(updatedUser);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            message: `Error: ${e.message}`
+        });
     }
 };
 
+/**
+ * Deletes a pickup address
+ * @route DELETE /user/address/:id?addressId=<string> with the addressId of the address to delete
+ */
 export const deletePickupAddress = async (req: Request, res: Response) => {
     const userId = req.params.id;
     const { addressId } = req.query;
@@ -96,9 +117,7 @@ export const deletePickupAddress = async (req: Request, res: Response) => {
     try {
         const user = await User.findById(userId);
         const newPickupAddresses = user.pickupAddresses.filter(a => {
-            console.log(a._id, addressId, a._id === addressId);
-            // must use `equals` function, === does not work with id
-            return !a._id.equals(addressId);
+            return a._id.toString() !== addressId.toString();
         });
         const newUser = await user.update({
             pickupAddresses: newPickupAddresses
