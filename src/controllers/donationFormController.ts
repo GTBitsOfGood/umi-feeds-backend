@@ -6,6 +6,8 @@ import { User, UserDocument } from '../models/User/index';
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
 import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
 
+const DONATION_FORM_DEFAULT_IMAGE_URL = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836';
+
 /**
  * Gets Donation Forms by User
  * @route GET /api/donationform?id={userid}[&donationFormID={formid}]
@@ -82,12 +84,6 @@ export const postDonationForm = (req: Request, res: Response) => {
         return;
     }
 
-    // req.files.image should hold the uploaded image to forward to Azure
-    if (req.files === undefined || req.files === null || req.files.image === undefined) {
-        res.status(400).json({ message: 'No image included with key \'image\'', donationform: {} });
-        return;
-    }
-
     // req.body.data should hold the donationform information to save to the user
     if (req.body === undefined || req.body === null || req.body.data === undefined) {
         res.status(400).json({ message: 'No data about donation provided with key \'data\'', donationform: {} });
@@ -97,8 +93,10 @@ export const postDonationForm = (req: Request, res: Response) => {
     // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
     Promise.all(
         [
-            // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-            uploadImageAzure(req.files.image),
+            // If we have a file to upload call uploadImageAzure otherwise just use the default image url
+            (req.files !== null && req.files !== undefined && req.files.image !== undefined)
+                // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
+                ? uploadImageAzure(req.files.image) : DONATION_FORM_DEFAULT_IMAGE_URL,
             User.findById(userid)
         ]
     ).then((values) => {
