@@ -6,8 +6,6 @@ import { User, UserDocument } from '../models/User/index';
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
 import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
 
-const DONATION_FORM_DEFAULT_IMAGE_URL = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836';
-
 /**
  * Gets Donation Forms by User
  * @route GET /api/donationform?id={userid}[&donationFormID={formid}]
@@ -96,7 +94,7 @@ export const postDonationForm = (req: Request, res: Response) => {
             // If we have a file to upload call uploadImageAzure otherwise just use the default image url
             (req.files !== null && req.files !== undefined && req.files.image !== undefined)
                 // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-                ? uploadImageAzure(req.files.image) : DONATION_FORM_DEFAULT_IMAGE_URL,
+                ? uploadImageAzure(req.files.image) : '',
             User.findById(userid)
         ]
     ).then((values) => {
