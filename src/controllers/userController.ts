@@ -61,6 +61,79 @@ export const getUsersByRoles = (req: Request, res: Response) => {
         });
 };
 
+/**
+ * Adds a pickup address to the user object
+ * @route POST /user/address/:id
+ */
+export const addPickupAddress = async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { body } = req;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, { $push: { pickupAddresses: body } }, { new: true });
+        res.status(200).send(updatedUser);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            message: `Error: ${e.message}`
+        });
+    }
+};
+
+/**
+ * Updates an existing pickup address
+ * @route PUT /user/address/:id with the body the edited address including the id
+ */
+export const editPickupAddress = async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { body } = req;
+    console.log(body);
+    try {
+        const oldUser = await User.findById(userId);
+        const newPickupAddresses = oldUser.pickupAddresses.map(address => {
+            if (address._id.toString() === req.body._id.toString()) {
+                return body;
+            }
+            return address;
+        });
+        const updatedUser = await User.findByIdAndUpdate(userId, { pickupAddresses: newPickupAddresses }, { new: true });
+        res.status(200).send(updatedUser);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            message: `Error: ${e.message}`
+        });
+    }
+};
+
+/**
+ * Deletes a pickup address
+ * @route DELETE /user/address/:id?addressId=<string> with the addressId of the address to delete
+ */
+export const deletePickupAddress = async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const { addressId } = req.query;
+
+    try {
+        const user = await User.findById(userId);
+        const newPickupAddresses = user.pickupAddresses.filter(a => {
+            return a._id.toString() !== addressId.toString();
+        });
+        const newUser = await user.update({
+            pickupAddresses: newPickupAddresses
+        });
+        res.status(200).send(newUser);
+    } catch (e) {
+        res.status(500).send({
+            message: `Error: ${e.message}`
+        });
+    }
+};
+
+/**
+ * Updates a user to a new user object sent in the body of the request
+ * @route PUT /user/:id
+ */
 export const updateUser = (req: Request, res: Response) => {
     const { id } = req.params;
     const { body } = req;

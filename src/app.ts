@@ -29,7 +29,7 @@ const mongoUrl = MONGODB_URI;
 mongoose.Promise = bluebird;
 
 if (ENVIRONMENT !== 'test') {
-    mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+    mongoose.connect(mongoUrl, { useFindAndModify: false, useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
         () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
     ).catch(err => {
         console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
