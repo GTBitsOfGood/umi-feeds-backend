@@ -50,16 +50,11 @@ export const getDish = (req: Request, res: Response) => {
  * @param {string} req.body.json Stringfied json with updated dish information.
  * Ex: { "allergens": ["meat"], "dishName": "Chicken Salad", "pounds": 2, "cost": 12.99, "comments": "Made fresh"}
  * */
-export const postDish = (req: Request, res: Response) => {
+export const postDish = async (req: Request, res: Response) => {
     const userId = req.query.id;
 
     if (!userId) {
         res.status(400).json({ message: 'Missing user id for request.' });
-        return;
-    }
-
-    if (!req.files.dishImage) {
-        res.status(400).json({ message: 'No image attached to key "dishImage" for dish.' });
         return;
     }
 
@@ -68,29 +63,29 @@ export const postDish = (req: Request, res: Response) => {
         return;
     }
 
-    if (!req.body.json && !req.files.dishImage) {
-        res.status(400).json({ message: 'No data about dish attached to key "json" and no image attached to key "dishImage".' });
-        return;
+    const dishBody = JSON.parse(req.body.json);
+    dishBody._id = mongoose.Types.ObjectId();
+    if (req.files === null) {
+        dishBody.imageLink = '';
+    } else {
+        try {
+            // need to wait for the response before proceeding. Synchronous here.
+            const url = await uploadImageAzure(req.files.dishImage as UploadedFile);
+            dishBody.imageLink = url;
+        } catch (err) {
+            dishBody.imageLink = '';
+        }
     }
 
-    Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile))
-        .then((url: string) => {
-            const dishBody = JSON.parse(req.body.json);
-            dishBody._id = mongoose.Types.ObjectId();
-            dishBody.imageLink = url;
-
-            return User.updateOne({ _id: userId }, { $push: { dishes: dishBody } })
-                .then((result: mongoose.UpdateWriteOpResult) => {
-                    if (result.nModified !== 0) {
-                        res.status(201).json({ message: 'Success' });
-                    } else {
-                        res.status(404).json({ message: 'The specified user does not exist.' });
-                    }
-                })
-                .catch((error: Error) => {
-                    res.status(400).json({ message: error.message });
-                });
-        }).catch((error: Error) => {
+    User.updateOne({ _id: userId }, { $push: { dishes: dishBody } })
+        .then((result: mongoose.UpdateWriteOpResult) => {
+            if (result.nModified !== 0) {
+                res.status(201).json({ message: 'Success' });
+            } else {
+                res.status(404).json({ message: 'The specified user does not exist.' });
+            }
+        })
+        .catch((error: Error) => {
             res.status(400).json({ message: error.message });
         });
 };
@@ -116,18 +111,8 @@ export const updateDish = (req: Request, res: Response) => {
         return;
     }
 
-    if (!req.files.dishImage) {
-        res.status(400).json({ message: 'No image attached to key "dishImage" for dish.' });
-        return;
-    }
-
     if (!req.body.json) {
         res.status(400).json({ message: 'No data about dish attached to key "json".' });
-        return;
-    }
-
-    if (!req.body.json && !req.files.dishImage) {
-        res.status(400).json({ message: 'No data about dish attached to key "json" and no image attached to key "dishImage".' });
         return;
     }
 
@@ -143,25 +128,31 @@ export const updateDish = (req: Request, res: Response) => {
             res.status(400).json({ message: error.message });
         });
 
-    Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile)).then((url: string) => {
-        const dishBody = JSON.parse(req.body.json);
-        dishBody._id = dishId;
-        dishBody.imageLink = url;
+    const dishBody = JSON.parse(req.body.json);
+    dishBody._id = dishId;
 
-        return User.updateOne({ _id: userId, 'dishes._id': dishId }, { $set: { 'dishes.$': dishBody } })
-            .then((result: mongoose.UpdateWriteOpResult) => {
-                if (result.nModified === 1) {
-                    res.status(201).json({ message: 'Success' });
-                } else {
-                    res.status(404).json({ message: 'The specified user or dish does not exist.' });
-                }
-            })
-            .catch((error: Error) => {
+    if (!req.files.dishImage) {
+        dishBody.imageLink = '';
+    } else {
+        Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile))
+            .then((url: string) => {
+                dishBody.imageLink = url; // saves URL from uploaded image to the dishBody object
+            }).catch((error: Error) => {
                 res.status(400).json({ message: error.message });
             });
-    }).catch((error: Error) => {
-        res.status(400).json({ message: error.message });
-    });
+    }
+
+    User.updateOne({ _id: userId, 'dishes._id': dishId }, { $set: { 'dishes.$': dishBody } })
+        .then((result: mongoose.UpdateWriteOpResult) => {
+            if (result.nModified === 1) {
+                res.status(201).json({ message: 'Success' });
+            } else {
+                res.status(404).json({ message: 'The specified user or dish does not exist.' });
+            }
+        })
+        .catch((error: Error) => {
+            res.status(400).json({ message: error.message });
+        });
 };
 
 /**
