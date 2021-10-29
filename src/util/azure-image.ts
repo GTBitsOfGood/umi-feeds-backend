@@ -32,8 +32,8 @@ const getBlobName = (originalName:string) : string => {
 
 export async function uploadImageAzure(file: UploadedFile) : Promise<string> {
     // If no file, blockBlobClient url is empty
-    if(!file) {
-      return ""
+    if (!file) {
+        return '';
     }
     const blobName = getBlobName(file.name);
     const stream = intoStream(file.data);
