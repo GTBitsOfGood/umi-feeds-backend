@@ -81,13 +81,6 @@ export const postDonationForm = async (req: Request, res: Response) => {
         return;
     }
 
-    // req.files.image should hold the uploaded image to forward to Azure
-    /*
-    if (req.files === undefined || req.files === null || req.files.image === undefined) {
-        res.status(400).json({ message: 'No image included with key \'image\'', donationform: {} });
-        return;
-    } */
-
     // req.body.data should hold the donationform information to save to the user
     if (req.body === undefined || req.body === null || req.body.data === undefined) {
         res.status(400).json({ message: 'No data about donation provided with key \'data\'', donationform: {} });
