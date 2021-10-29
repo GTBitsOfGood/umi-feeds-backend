@@ -50,7 +50,7 @@ export const getDish = (req: Request, res: Response) => {
  * @param {string} req.body.json Stringfied json with updated dish information.
  * Ex: { "allergens": ["meat"], "dishName": "Chicken Salad", "pounds": 2, "cost": 12.99, "comments": "Made fresh"}
  * */
-export const postDish = (req: Request, res: Response) => {
+export const postDish = async (req: Request, res: Response) => {
     const userId = req.query.id;
 
     if (!userId) {
@@ -65,16 +65,16 @@ export const postDish = (req: Request, res: Response) => {
 
     const dishBody = JSON.parse(req.body.json);
     dishBody._id = mongoose.Types.ObjectId();
-
-    if (!req.files.dishImage) {
+    if (req.files === null) {
         dishBody.imageLink = '';
     } else {
-        Promise.resolve(uploadImageAzure(req.files.dishImage as UploadedFile))
-            .then((url: string) => {
-                dishBody.imageLink = url; // saves URL from uploaded image to the dishBody object
-            }).catch((error: Error) => {
-                res.status(400).json({ message: error.message });
-            });
+        try {
+            // need to wait for the response before proceeding. Synchronous here.
+            const url = await uploadImageAzure(req.files.dishImage as UploadedFile);
+            dishBody.imageLink = url;
+        } catch (err) {
+            dishBody.imageLink = '';
+        }
     }
 
     User.updateOne({ _id: userId }, { $push: { dishes: dishBody } })
