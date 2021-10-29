@@ -80,7 +80,7 @@ export const postDish = async (req: Request, res: Response) => {
     User.updateOne({ _id: userId }, { $push: { dishes: dishBody } })
         .then((result: mongoose.UpdateWriteOpResult) => {
             if (result.nModified !== 0) {
-                res.status(201).json({ message: 'Success' });
+                res.status(201).json({ message: 'Success', dishForm: dishBody });
             } else {
                 res.status(404).json({ message: 'The specified user does not exist.' });
             }
