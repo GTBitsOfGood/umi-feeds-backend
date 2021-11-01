@@ -16,7 +16,7 @@ export const DishSchema = new mongoose.Schema<Dish>({
     cost: { type: Number, required: true },
     pounds: { type: Number, required: true },
     allergens: { type: [String], required: true },
-    imageLink: { type: String, required: true },
+    imageLink: { type: String, default: '' },
     comments: { type: String, required: true },
     favorite: { type: Boolean, default: false },
 });
