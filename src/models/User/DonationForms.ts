@@ -67,7 +67,7 @@ export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocumen
         type: String,
         enum: ['pending pickup', 'picked up', 'dropped off'],
     },
-    imageLink: { type: String, required: true },
+    imageLink: { type: String, default: '' },
     dishes: { type: [DonationDishesSchema], required: true },
     pickupAddress: { type: AddressSchema, required: true },
     pickupInstructions: { type: String, required: true },

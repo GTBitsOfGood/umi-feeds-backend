@@ -6,7 +6,6 @@ import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
 import { OngoingDonation } from '../models/User/DonationForms';
 import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
 
-
 /**
  * Gets Donation Forms by User
  * @route GET /api/donationform?id={userid}[&donationFormID={formid}]
@@ -95,13 +94,11 @@ export const postDonationForm = async (req: Request, res: Response) => {
 
     try {
         // Handle image upload and finding specified user with async/await
-      
+        let url = '';
         if (req.files !== null && req.files !== undefined && req.files.image !== undefined) {
-          const url = await uploadImageAzure(req.files.image as UploadedFile);
-        } else { 
-          const url = '';
-        } 
-      
+            url = await uploadImageAzure(req.files.image as UploadedFile);
+        }
+
         const currentUser = await User.findById(userid).session(session);
 
         // Processing JSON data payload
@@ -115,70 +112,61 @@ export const postDonationForm = async (req: Request, res: Response) => {
                 const donationId = updatedUser.donations[updatedUser.donations.length - 1]._id;
                 newDonationForm._id = donationId;
                 return updatedUser;
-
-    // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
-    Promise.all(
-        [
-            // If we have a file to upload call uploadImageAzure otherwise just use the default image url
-            (req.files !== null && req.files !== undefined && req.files.image !== undefined)
-                // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-                ? uploadImageAzure(req.files.image) : '',
-            User.findById(userid)
-        ]
-    ).then((values) => {
-        try {
-            // Parse the 'data' from the request body to get the new donation form
-            const newDonationForm = JSON.parse(req.body.data);
-
-            let currentUser:UserDocument;
-            [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
-
-            currentUser.donations.push(newDonationForm);
-            currentUser.save().then((updatedUser: UserDocument) => {
-
-         // Send a push notification to all the admins notifying them of the new donation
-         User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
-                    if (err) {
-                        res.status(500).json({ message: err.message, donationform: {} });
-                        return;
-                    }
-                    let tokens:string[] = [];
-                    // Collect the tokens of all the admins
-                    for (const user of users) {
-                        tokens = tokens.concat(user.pushTokens);
-                    }
-
-                    sendBatchNotification(`New Donation from ${currentUser.businessName}`,
-                        req.body.description ?? 'Check app for details',
-                        tokens);
-                });
-                res.status(200).json({
-                    message: 'Success',
-                    donationform: updatedUser.donations[updatedUser.donations.length - 1]
-        });
-          
-        // Adds donation to OngoingDonations
-        const savedOngoing = await OngoingDonation.create([newDonationForm], { session })
-            .catch((err: Error) => {
-                res.status(500).json({ message: err.message });
             });
+
+        // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
+        // Promise.all(
+        //     [
+        //         // If we have a file to upload call uploadImageAzure otherwise just use the default image url
+        //         (req.files !== null && req.files !== undefined && req.files.image !== undefined)
+        //             // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
+        //             ? uploadImageAzure(req.files.image) : '',
+        //         User.findById(userid)
+        //     ]
+        // ).then((values) => {
+        //     try {
+        //         // Parse the 'data' from the request body to get the new donation form
+        //         const newDonationForm = JSON.parse(req.body.data);
+
+        //         let currentUser:UserDocument;
+        //         [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
+
+        //         currentUser.donations.push(newDonationForm);
+        //         currentUser.save().then((updatedUser: UserDocument) => {
+
+        // Send a push notification to all the admins notifying them of the new donation
+        User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
+            if (err) {
+                throw err;
+            }
+            let tokens:string[] = [];
+            // Collect the tokens of all the admins
+            for (const user of users) {
+                tokens = tokens.concat(user.pushTokens);
+            }
+            console.log('sending notification');
+            sendBatchNotification(`New Donation from ${currentUser.businessName}`,
+                req.body.description ?? 'Check app for details',
+                tokens);
+        });
+
+        // Adds donation to OngoingDonations
+        const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
 
         if (savedDonation && savedOngoing) {
             await session.commitTransaction();
             res.status(200).json({
-                message: 'Success'
+                message: 'Success',
+                donationform: savedDonation.donations[savedDonation.donations.length - 1]
             });
         } else {
-            res.status(500).json({
-                message: 'Could not save donation.'
-            });
+            throw new Error('Failed to Save Donation');
         }
     } catch (err) {
         await session.abortTransaction();
         res.status(500).json({
             message: err.message
         });
-        throw err;
     } finally {
         session.endSession();
     }
