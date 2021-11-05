@@ -17,8 +17,6 @@ import * as imageController from './controllers/imageUpload';
 
 // Sub Routers
 import MainRoutes from './routes/index';
-import donorRouter from './routes/donors';
-import userRouter from './routes/users';
 
 const MongoStore = mongo(session);
 
@@ -31,7 +29,7 @@ const mongoUrl = MONGODB_URI;
 mongoose.Promise = bluebird;
 
 if (ENVIRONMENT !== 'test') {
-    mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
+    mongoose.connect(mongoUrl, { useFindAndModify: false, useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }).then(
         () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ }
     ).catch(err => {
         console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
@@ -85,8 +83,6 @@ app.post('/testpush', (req, res) => {
     // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]
     sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
 });
-app.use('/api', donorRouter);
-app.use('/api', userRouter);
 
 // Work off of this one. the others will get retired soon
 app.use('/', MainRoutes);

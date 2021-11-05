@@ -7,6 +7,7 @@ export type Dish = {
   pounds: number;
   allergens: string[];
   imageLink: string; // link to azure image
+  favorite: boolean;
   comments: string;
   favorite: boolean;
 }
@@ -16,7 +17,7 @@ export const DishSchema = new mongoose.Schema<Dish>({
     cost: { type: Number, required: true },
     pounds: { type: Number, required: true },
     allergens: { type: [String], required: true },
-    imageLink: { type: String, required: true },
+    imageLink: { type: String, default: '' },
     comments: { type: String, required: true },
-    favorite: { type: Boolean, required: true }
+    favorite: { type: Boolean, default: false },
 });

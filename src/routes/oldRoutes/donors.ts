@@ -1,6 +1,6 @@
 import express from 'express';
-import * as donorController from '../controllers/donorController';
-import { userJwt } from '../util/auth';
+import * as donorController from '../../controllers/oldControllers/donorController';
+import { userJwt } from '../../util/auth';
 
 const router = express.Router();
 router.get('/donors', donorController.getDonors);
