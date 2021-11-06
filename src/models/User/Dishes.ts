@@ -9,7 +9,6 @@ export type Dish = {
   imageLink: string; // link to azure image
   favorite: boolean;
   comments: string;
-  favorite: boolean;
 }
 
 export const DishSchema = new mongoose.Schema<Dish>({

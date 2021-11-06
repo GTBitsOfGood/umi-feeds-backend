@@ -1,6 +1,7 @@
-import mongoose, { Error } from 'mongoose';
+import mongoose from 'mongoose';
 import { Response, Request } from 'express';
 import { UploadedFile } from 'express-fileupload';
+import { url } from 'inspector';
 import { User, UserDocument } from '../models/User/index';
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
 import { OngoingDonation } from '../models/User/DonationForms';
@@ -38,7 +39,7 @@ export const getDonationForms = (req: Request, res: Response) => {
                 res.status(400).json({ message: `Could not find donations form ${formid} for user ${userid}`, donationforms: [] });
             }
         })
-        .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
+        .catch((error: mongoose.Error) => res.status(400).json({ message: error.message, donationforms: [] }));
 };
 
 /**
@@ -66,7 +67,7 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
             }
             res.status(200).json({ message: 'Success', donationforms: donations });
         })
-        .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
+        .catch((error: mongoose.Error) => res.status(400).json({ message: error.message, donationforms: [] }));
 };
 
 /**
@@ -93,13 +94,19 @@ export const postDonationForm = async (req: Request, res: Response) => {
     session.startTransaction();
 
     try {
-        // Handle image upload and finding specified user with async/await
-        let url = '';
-        if (req.files !== null && req.files !== undefined && req.files.image !== undefined) {
-            url = await uploadImageAzure(req.files.image as UploadedFile);
-        }
+        // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
+        const [url, currentUser] = await Promise.all(
+            [
+                // If we have a file to upload call uploadImageAzure otherwise just use the default image url
+                (req.files !== null && req.files !== undefined && req.files.image !== undefined
+                    ? uploadImageAzure(req.files.image as UploadedFile) : ''),
+                User.findById(userid)
+            ]
+        );
 
-        const currentUser = await User.findById(userid).session(session);
+        if (!currentUser) {
+            throw new Error('User does not exist.');
+        }
 
         // Processing JSON data payload
         const newDonationForm = JSON.parse(req.body.data);
@@ -114,25 +121,9 @@ export const postDonationForm = async (req: Request, res: Response) => {
                 return updatedUser;
             });
 
-        // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
-        // Promise.all(
-        //     [
-        //         // If we have a file to upload call uploadImageAzure otherwise just use the default image url
-        //         (req.files !== null && req.files !== undefined && req.files.image !== undefined)
-        //             // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-        //             ? uploadImageAzure(req.files.image) : '',
-        //         User.findById(userid)
-        //     ]
-        // ).then((values) => {
-        //     try {
-        //         // Parse the 'data' from the request body to get the new donation form
-        //         const newDonationForm = JSON.parse(req.body.data);
-
-        //         let currentUser:UserDocument;
-        //         [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
-
-        //         currentUser.donations.push(newDonationForm);
-        //         currentUser.save().then((updatedUser: UserDocument) => {
+        if (!savedDonation) {
+            throw new Error('Failed to Save Donation');
+        }
 
         // Send a push notification to all the admins notifying them of the new donation
         User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
@@ -150,18 +141,19 @@ export const postDonationForm = async (req: Request, res: Response) => {
                 tokens);
         });
 
-        // Adds donation to OngoingDonations
+        // Adds donation to OngoingDonations queue
         const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
 
-        if (savedDonation && savedOngoing) {
-            await session.commitTransaction();
-            res.status(200).json({
-                message: 'Success',
-                donationform: savedDonation.donations[savedDonation.donations.length - 1]
-            });
-        } else {
+        if (!savedOngoing) {
             throw new Error('Failed to Save Donation');
         }
+
+        // Commit transaction and sending success response if saved into DB
+        await session.commitTransaction();
+        res.status(200).json({
+            message: 'Success',
+            donationform: savedDonation.donations[savedDonation.donations.length - 1]
+        });
     } catch (err) {
         await session.abortTransaction();
         res.status(500).json({
@@ -239,13 +231,13 @@ export const putDonationForm = (req: Request, res: Response) => {
                     if (oldImageUrl !== null) {
                         deleteImageAzure(oldImageUrl).then(() => {
                             res.status(200).json({ message: 'Success', donationform: donation });
-                        }).catch((err:Error) => {
+                        }).catch((err: mongoose.Error) => {
                             res.status(400).json({ message: err.message, donationform: donation });
                         });
                     } else {
                         res.status(200).json({ message: 'Success', donationform: donation });
                     }
-                }).catch((err:Error) => {
+                }).catch((err: mongoose.Error) => {
                     res.status(500).json({ message: err.message, donationform: donation });
                 });
                 return;
@@ -284,10 +276,10 @@ export const deleteDonationForm = (req: Request, res: Response) => {
                 deleteImageAzure(donation.imageLink).then(() => {
                     result.save().then(() => {
                         res.status(200).json({ message: 'Success', donationform: donation });
-                    }).catch((err:Error) => {
+                    }).catch((err: mongoose.Error) => {
                         res.status(400).json({ message: err.message, donationform: donation });
                     });
-                }).catch((err:Error) => {
+                }).catch((err: mongoose.Error) => {
                     res.status(400).json({ message: err.message, donationform: donation });
                 });
                 return;
@@ -295,7 +287,7 @@ export const deleteDonationForm = (req: Request, res: Response) => {
         }
         // If we looped through all of the users donations and couldn't find a matching donation form return error
         res.status(400).json({ message: `Could not find donation form with id ${formid} for user ${userid}`, donationform: {} });
-    }).catch((err: Error) => {
+    }).catch((err: mongoose.Error) => {
         res.status(400).json({ message: err.message, donationform: {} });
     });
 };
