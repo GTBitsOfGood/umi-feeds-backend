@@ -59,6 +59,7 @@ export type OngoingDonationDocument = mongoose.Document & {
   lockedByVolunteer: boolean; // whether the donation has been locked by a volunteer
   confirmPickUpTime: Date; // time when donation has been picked up by volunteer
   confirmDropOffTime: Date; // time when donation has been dropped off by volunteer
+  userID: string;
 }
 
 export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
@@ -76,6 +77,7 @@ export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocumen
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, required: true },
     volunteerLockTime: { type: Date, required: true },
+    userID: { type: String, required: true}
 }, { timestamps: true });
 
 export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);

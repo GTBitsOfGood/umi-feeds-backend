@@ -143,6 +143,7 @@ export const postDonationForm = async (req: Request, res: Response) => {
         });
 
         // Adds donation to OngoingDonations queue
+        newDonationForm.userID = userid;
         const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
 
         if (!savedOngoing) {
@@ -196,15 +197,21 @@ export const putDonationForm = async (req: Request, res: Response) => {
     session.startTransaction();
 
     try {
-        // Check if specified donation exists in Ongoing Donation queue
-        const ongoingDonation:OngoingDonationDocument = await OngoingDonation.findById(formid);
+        // Check if specified donation and specified User exists
+        const [ongoingDonation, currentUser] = await Promise.all(
+            [
+                OngoingDonation.findById(formid),
+                User.findById(userid).session(session)
+            ]
+        );
+        //const ongoingDonation:OngoingDonationDocument = await OngoingDonation.findById(formid);
 
         if (!ongoingDonation) {
             throw new Error('Specified donation does not exist.');
         }
 
         // Check if specified User exists
-        const currentUser:UserDocument = await User.findById(userid).session(session);
+        //const currentUser:UserDocument = await User.findById(userid).session(session);
 
         if (!currentUser) {
             throw new Error('Specified user does not exist.');
