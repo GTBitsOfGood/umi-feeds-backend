@@ -10,7 +10,7 @@ import { userDonations } from './oldControllers/donorController';
 
 /**
  * Gets Donation Forms by User
- * @route GET /api/donationform?id={userid}[&donationFormID={formid}]
+ * @route GET /api/donationform?id={userid}&donationFormID={formid}
  */
 export const getDonationForms = (req: Request, res: Response) => {
     const userid = req.query.id || null;

@@ -19,6 +19,7 @@ export const getOngoingDonations = (req: Request, res: Response) => {
 /**
  * Updating corresponding ongoing donation
  * @route PUT /api/ongoingdonations/:donationID
+ * @param {string} req.body.json Stringfied json with updated donation information
  *
  */
 export const updateOngoingDonation = async (req: Request, res: Response) => {
@@ -141,6 +142,7 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
             throw new Error('Specified donation does not exist');
         }
         const userId = ongoingDonation.userID;
+        const imageUrl:string = ongoingDonation.imageLink;
 
         // Delete specified ongoing donation from queue
         const deletedQueueResponse = await OngoingDonation.deleteOne({ _id: donationId }).session(session);
@@ -153,6 +155,12 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
 
         if (updatedDonationResponse.nModified !== 1) {
             throw new Error('Could not update donation status for User.');
+        }
+
+        // Deletes image from Azure if transactions are successful
+        const deletedResponse = await deleteImageAzure(imageUrl);
+        if (!deletedResponse) {
+            throw new Error('Could not delete donation image from Azure.');
         }
 
         // Commit transaction after deleting donation from queue and marking it as complete in array
