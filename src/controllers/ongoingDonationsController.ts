@@ -21,15 +21,11 @@ export const getOngoingDonations = (req: Request, res: Response) => {
  * @route PUT /api/ongoingdonations/:donationID
  *
  */
-export const updateOngoingDonation = (req: Request, res: Response) => {
+export const updateOngoingDonation = async (req: Request, res: Response) => {
     const donationId = req.params.donationID;
 
     if (!donationId) {
         res.status(400).json({ message: 'Missing ongoing donation id' });
-        return;
-    }
-    if (!req.files || !req.files.donationImage) {
-        res.status(400).json({ message: 'No image attached to key "donationImage" for ongoing donation.' });
         return;
     }
 
@@ -38,42 +34,87 @@ export const updateOngoingDonation = (req: Request, res: Response) => {
         return;
     }
 
-    if (!req.body.json && !req.files.donationImage) {
-        res.status(400).json({ message: 'No data about ongoing donation attached to key "json" and no image attached to key "donationImage".' });
-        return;
-    }
+    // Set up transaction session
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // Deletes old image from Azure
-    OngoingDonation.findOne({ _id: donationId })
-        .then((result: OngoingDonationDocument) => {
-            const oldImageUrl:string = result.imageLink;
-            deleteImageAzure(oldImageUrl)
-                .catch((err: Error) => {
-                    res.status(400).json({ message: err.message });
-                });
-        }).catch((error: Error) => {
-            res.status(400).json({ message: error.message });
-        });
+    try {
+        // Get userId from ongoing donation to modify donation in User's donation array
+        const ongoingDonation:OngoingDonationDocument = await OngoingDonation.findById(donationId);
+        if (!ongoingDonation) {
+            throw new Error('Specified donation does not exist');
+        }
+        const userId = ongoingDonation.userID;
 
-    // Handles image upload to Azure and updating entry in MongoDB
-    Promise.resolve(uploadImageAzure(req.files.donationImage as UploadedFile)).then((url: string) => {
-        const donationBody = JSON.parse(req.body.json);
-        donationBody._id = donationId;
-        donationBody.imageLink = url;
-        return OngoingDonation.findOneAndUpdate({ _id: donationId }, donationBody, { useFindAndModify: false })
-            .then((result: OngoingDonationDocument) => {
-                if (result) {
-                    res.status(201).json({ message: 'Success' });
-                } else {
-                    res.status(404).json({ message: 'The specified ongoing donation does not exist.' });
+        // Get current User to access their donations array
+        const currentUser:UserDocument = await User.findById(userId).session(session);
+
+        // Check if specified donation and specified User exists
+        if (!ongoingDonation) {
+            throw new Error('Specified donation does not exist.');
+        }
+
+        if (!currentUser) {
+            throw new Error('Specified user does not exist.');
+        }
+
+        // Upload new image to Azure if necessary
+        let newImageUrl:string;
+        if (req.files !== null && req.files !== undefined && req.files.donationImage !== undefined) {
+            newImageUrl = await uploadImageAzure(req.files.donationImage as UploadedFile);
+        } else {
+            newImageUrl = '';
+        }
+
+        // Deletes old image from Azure if a new image is updated for donation
+        const oldImageUrl:string = ongoingDonation.imageLink;
+        if (oldImageUrl && newImageUrl) {
+            deleteImageAzure(oldImageUrl);
+        }
+
+        // Processing JSON data payload
+        const newDonationForm = JSON.parse(req.body.json);
+        if (newImageUrl) {
+            newDonationForm.imageLink = newImageUrl;
+        }
+
+        // Update specified donation as a part of User's donations array
+        for (const donation of currentUser.donations) {
+            if (donation._id.toString() === donationId) {
+                for (const [key, value] of Object.entries(newDonationForm)) {
+                    // Replace all of the old values in the donationform
+                    // @ts-ignore Key is always a string, but Typescript finds that confusing
+                    donation[key] = value;
                 }
-            })
-            .catch((error: Error) => {
-                res.status(400).json({ message: error.message });
-            });
-    }).catch((error: Error) => {
-        res.status(400).json({ message: error.message });
-    });
+            }
+        }
+
+        // Saves updated donation to User donation array
+        const updatedDonation:UserDocument = await currentUser.save();
+        if (!updatedDonation) {
+            throw new Error('Failed to update donation for specified user');
+        }
+
+        // Update specified donation in Ongoing Donation Queue
+        const updatedOngoing = await OngoingDonation.findByIdAndUpdate(donationId, newDonationForm, { new: true }).session(session);
+        if (!updatedOngoing) {
+            throw new Error('Failed to update Ongoing Donation for specified user.');
+        }
+
+        // Commit transaction once updated in both collections
+        await session.commitTransaction();
+        res.status(200).json({
+            message: 'Success',
+            donationform: updatedOngoing
+        });
+    } catch (err) {
+        await session.abortTransaction();
+        res.status(500).json({
+            message: err.message
+        });
+    } finally {
+        session.endSession();
+    }
 };
 
 /**
@@ -81,7 +122,7 @@ export const updateOngoingDonation = (req: Request, res: Response) => {
  * @route DELETE /api/ongoingdonations/:donationID
  *
  */
-export const deleteOngoingDonation =  async (req: Request, res: Response) => {
+export const deleteOngoingDonation = async (req: Request, res: Response) => {
     const donationId = req.params.donationID;
 
     if (!donationId) {
@@ -108,24 +149,11 @@ export const deleteOngoingDonation =  async (req: Request, res: Response) => {
         }
 
         // Update status and ongoing of specified donation in User's donation array
-        const updatedDonationResponse:mongoose.UpdateWriteOpResult = await User.updateOne({ _id: userId, 'donations._id': donationId }, { $set: { 'donations.$.status': 'completed', 'donations.$.ongoing': false  } }).session(session);
+        const updatedDonationResponse:mongoose.UpdateWriteOpResult = await User.updateOne({ _id: userId, 'donations._id': donationId }, { $set: { 'donations.$.status': 'dropped off', 'donations.$.ongoing': false } }).session(session);
 
-        if (updatedDonationResponse.nModified  !== 1) {
+        if (updatedDonationResponse.nModified !== 1) {
             throw new Error('Could not update donation status for User.');
         }
-
-        /*
-        OngoingDonation.deleteOne({ _id: donationId })
-            .then((result) => {
-                if (result.deletedCount === 1) {
-                    res.status(200).json({ message: 'Success' });
-                } else {
-                    res.status(404).json({ message: 'The specified ongoing donation does not exist.' });
-                }
-            })
-            .catch((error: Error) => {
-                res.status(400).json({ message: error.message });
-            }); */
 
         // Commit transaction after deleting donation from queue and marking it as complete in array
         await session.commitTransaction();

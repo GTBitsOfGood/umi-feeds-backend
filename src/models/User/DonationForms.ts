@@ -77,7 +77,7 @@ export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocumen
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, required: true },
     volunteerLockTime: { type: Date, required: true },
-    userID: { type: String, required: true}
+    userID: { type: String, required: true }
 }, { timestamps: true });
 
 export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);
