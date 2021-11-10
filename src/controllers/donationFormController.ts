@@ -110,6 +110,7 @@ export const postDonationForm = (req: Request, res: Response) => {
                 // Send a push notification to all the admins notifying them of the new donation
                 User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
                     if (err) {
+                        console.log(err);
                         res.status(500).json({ message: err.message, donationform: {} });
                         return;
                     }
@@ -128,6 +129,7 @@ export const postDonationForm = (req: Request, res: Response) => {
                     donationform: updatedUser.donations[updatedUser.donations.length - 1]
                 });
             }).catch((err: Error) => {
+                console.log(err);
                 res.status(500).json({ message: err.message, donationform: {} });
             });
         } catch (err) {
