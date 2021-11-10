@@ -59,25 +59,8 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
             throw new Error('Specified user does not exist.');
         }
 
-        // Upload new image to Azure if necessary
-        let newImageUrl:string;
-        if (req.files !== null && req.files !== undefined && req.files.donationImage !== undefined) {
-            newImageUrl = await uploadImageAzure(req.files.donationImage as UploadedFile);
-        } else {
-            newImageUrl = '';
-        }
-
-        // Deletes old image from Azure if a new image is updated for donation
-        const oldImageUrl:string = ongoingDonation.imageLink;
-        if (oldImageUrl && newImageUrl) {
-            deleteImageAzure(oldImageUrl);
-        }
-
         // Processing JSON data payload
         const newDonationForm = JSON.parse(req.body.json);
-        if (newImageUrl) {
-            newDonationForm.imageLink = newImageUrl;
-        }
 
         // Update specified donation as a part of User's donations array
         for (const donation of currentUser.donations) {
@@ -142,7 +125,6 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
             throw new Error('Specified donation does not exist');
         }
         const userId = ongoingDonation.userID;
-        const imageUrl:string = ongoingDonation.imageLink;
 
         // Delete specified ongoing donation from queue
         const deletedQueueResponse = await OngoingDonation.deleteOne({ _id: donationId }).session(session);
@@ -155,12 +137,6 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
 
         if (updatedDonationResponse.nModified !== 1) {
             throw new Error('Could not update donation status for User.');
-        }
-
-        // Deletes image from Azure if transactions are successful
-        const deletedResponse = await deleteImageAzure(imageUrl);
-        if (!deletedResponse) {
-            throw new Error('Could not delete donation image from Azure.');
         }
 
         // Commit transaction after deleting donation from queue and marking it as complete in array

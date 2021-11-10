@@ -221,12 +221,6 @@ export const putDonationForm = async (req: Request, res: Response) => {
             newImageUrl = '';
         }
 
-        // Deletes old image from Azure if a new image is updated for donation
-        const oldImageUrl:string = ongoingDonation.imageLink;
-        if (oldImageUrl && newImageUrl) {
-            deleteImageAzure(oldImageUrl);
-        }
-
         // Processing JSON data payload
         const newDonationForm = JSON.parse(req.body.data);
         if (newImageUrl) {
@@ -234,14 +228,21 @@ export const putDonationForm = async (req: Request, res: Response) => {
         }
 
         // Update specified donation as a part of User's donations array
+        let oldImageUrl:string = '';
         for (const donation of currentUser.donations) {
             if (donation._id.toString() === formid) {
+                oldImageUrl = donation.imageLink;
                 for (const [key, value] of Object.entries(newDonationForm)) {
                     // Replace all of the old values in the donationform
                     // @ts-ignore Key is always a string, but Typescript finds that confusing
                     donation[key] = value;
                 }
             }
+        }
+
+        // Deletes old image from Azure if a new image is updated for donation
+        if (oldImageUrl && newImageUrl) {
+            const deleteResponse = await deleteImageAzure(oldImageUrl);
         }
 
         // Saves updated donation to User donation array
@@ -251,6 +252,7 @@ export const putDonationForm = async (req: Request, res: Response) => {
         }
 
         // Update specified donation in Ongoing Donation Queue
+        delete newDonationForm.imageLink;
         const updatedOngoing = await OngoingDonation.findByIdAndUpdate(formid, newDonationForm, { new: true }).session(session);
         if (!updatedOngoing) {
             throw new Error('Failed to update Ongoing Donation for specified user.');
@@ -260,7 +262,7 @@ export const putDonationForm = async (req: Request, res: Response) => {
         await session.commitTransaction();
         res.status(200).json({
             message: 'Success',
-            donationform: updatedOngoing
+            donationform: updatedDonation.donations[updatedDonation.donations.length - 1]
         });
     } catch (err) {
         await session.abortTransaction();
