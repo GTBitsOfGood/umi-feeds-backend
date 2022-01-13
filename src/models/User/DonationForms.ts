@@ -32,10 +32,10 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     ongoing: { type: Boolean, required: true },
     status: {
         type: String,
-        enum: ['pending pickup', 'picked up', 'dropped off'],
+        enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
     },
     imageLink: { type: String, required: false },
-    dishes: { type: [DonationDishesSchema], required: true },
+    donationDishes: { type: [DonationDishesSchema], required: true },
     pickupAddress: { type: AddressSchema, required: true },
     pickupInstructions: { type: String, default: 'None' },
     pickupStartTime: { type: Date, required: true },
@@ -49,7 +49,6 @@ export type OngoingDonationDocument = mongoose.Document & {
   _id?: string; // the unqiue id assigned to a donation form. Let Mongo create this when you insert a document without any _id attribute
   ongoing: boolean;
   status: string;
-  imageLink: string;
   dishes: DonationDishes[];
   pickupAddress: Address;
   pickupInstructions: string;
@@ -59,15 +58,16 @@ export type OngoingDonationDocument = mongoose.Document & {
   lockedByVolunteer: boolean; // whether the donation has been locked by a volunteer
   confirmPickUpTime: Date; // time when donation has been picked up by volunteer
   confirmDropOffTime: Date; // time when donation has been dropped off by volunteer
+  userID: string;
 }
 
-export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
+const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
+    userID: { type: String, required: true },
     ongoing: { type: Boolean, required: true, default: true },
     status: {
         type: String,
-        enum: ['pending pickup', 'picked up', 'dropped off'],
+        enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
     },
-    imageLink: { type: String, default: '' },
     dishes: { type: [DonationDishesSchema], required: true },
     pickupAddress: { type: AddressSchema, required: true },
     pickupInstructions: { type: String, required: true },

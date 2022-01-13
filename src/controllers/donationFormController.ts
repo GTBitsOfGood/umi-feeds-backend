@@ -4,12 +4,13 @@ import { UploadedFile } from 'express-fileupload';
 import { url } from 'inspector';
 import { User, UserDocument } from '../models/User/index';
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
-import { OngoingDonation } from '../models/User/DonationForms';
+import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
 import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
+import { userDonations } from './oldControllers/donorController';
 
 /**
  * Gets Donation Forms by User
- * @route GET /api/donationform?id={userid}[&donationFormID={formid}]
+ * @route GET /api/donationform?id={userid}&donationFormID={formid}
  */
 export const getDonationForms = (req: Request, res: Response) => {
     const userid = req.query.id || null;
@@ -100,7 +101,7 @@ export const postDonationForm = async (req: Request, res: Response) => {
                 // If we have a file to upload call uploadImageAzure otherwise just use the default image url
                 (req.files !== null && req.files !== undefined && req.files.image !== undefined
                     ? uploadImageAzure(req.files.image as UploadedFile) : ''),
-                User.findById(userid)
+                User.findById(userid).session(session)
             ]
         );
 
@@ -142,6 +143,8 @@ export const postDonationForm = async (req: Request, res: Response) => {
         });
 
         // Adds donation to OngoingDonations queue
+        newDonationForm.userID = userid;
+
         const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
 
         if (!savedOngoing) {
@@ -168,7 +171,7 @@ export const postDonationForm = async (req: Request, res: Response) => {
  * Updates Donation Form fields based on provided data
  * @route PUT /api/donationform?id={userid}&donationFormID={formid}
  */
-export const putDonationForm = (req: Request, res: Response) => {
+export const putDonationForm = async (req: Request, res: Response) => {
     const userid = req.query.id || null;
     const formid = req.query.donationFormID || null;
 
@@ -184,73 +187,92 @@ export const putDonationForm = (req: Request, res: Response) => {
         return;
     }
 
-    // Find user by the specified userid
-    User.findById(userid).then(async (user) => {
-        // We need to loop through and find the donation form with the matching id
-        if (user === null) {
-            throw new Error('User Does Not Exist');
+    // Checck if modified data exists in body
+    if (req.body === undefined && req.body === null && req.body.data === undefined) {
+        res.status(400).json({ message: 'No data about dish attached to key "data".', donationform: {} });
+        return;
+    }
+
+    // Set up transaction session
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // Check if specified donation and specified User exists
+        const [ongoingDonation, currentUser] = await Promise.all(
+            [
+                OngoingDonation.findById(formid),
+                User.findById(userid).session(session)
+            ]
+        );
+
+        if (!ongoingDonation) {
+            throw new Error('Specified donation does not exist.');
         }
 
-        for (const donation of user.donations) {
-            if (donation._id.toString() === formid) {
-                // req.body.data should hold the donationform information to save to the user if it is being updated
-                if (req.body !== undefined && req.body !== null && req.body.data !== undefined) {
-                    try {
-                        // Parse the JSON for the replacement values from the 'data' field of the request
-                        const replacementData = JSON.parse(req.body.data);
-                        for (const [key, value] of Object.entries(replacementData)) {
-                            if (key === 'imageLink') {
-                                continue;
-                            }
-                            // Replace all of the old values in the donationform
-                            // @ts-ignore Key is always a string, but Typescript finds that confusing
-                            donation[key] = value;
-                        }
-                    } catch (err) {
-                        res.status(400).json({ message: err.message, donationform: {} });
-                        return;
-                    }
-                }
-                let oldImageUrl:string = null;
-                // req.files.image should hold the uploaded image to forward to Azure if the image will be replaced
-                if (req.files !== undefined && req.files !== null && req.files.image !== undefined) {
-                    try {
-                        // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-                        // This await will only run once because the loop returns in this if statement
-                        // eslint-disable-next-line no-await-in-loop
-                        const newImageUrl = await uploadImageAzure(req.files.image);
+        if (!currentUser) {
+            throw new Error('Specified user does not exist.');
+        }
 
-                        // Store the old image url to be deleted if everything else works.  Otherwise we don't want to
-                        //   delete it because it will still be the url for the image if the replacement doesn't happen
-                        oldImageUrl = donation.imageLink;
-                        donation.imageLink = newImageUrl;
-                    } catch (err) {
-                        res.status(400).json({ message: err.message, donationform: {} });
-                        return;
-                    }
+        // Upload new image to Azure if necessary
+        let newImageUrl:string;
+        if (req.files !== null && req.files !== undefined && req.files.image !== undefined) {
+            newImageUrl = await uploadImageAzure(req.files.image as UploadedFile);
+        } else {
+            newImageUrl = '';
+        }
+
+        // Processing JSON data payload
+        const newDonationForm = JSON.parse(req.body.data);
+        if (newImageUrl) {
+            newDonationForm.imageLink = newImageUrl;
+        }
+
+        // Update specified donation as a part of User's donations array
+        let oldImageUrl = '';
+        for (const donation of currentUser.donations) {
+            if (donation._id.toString() === formid) {
+                oldImageUrl = donation.imageLink;
+                for (const [key, value] of Object.entries(newDonationForm)) {
+                    // Replace all of the old values in the donationform
+                    // @ts-ignore Key is always a string, but Typescript finds that confusing
+                    donation[key] = value;
                 }
-                // Save the updated donation form to the database
-                user.save().then(() => {
-                    // If we replaced the image then we have to delete the image in azure for a full cleanup
-                    if (oldImageUrl !== null) {
-                        deleteImageAzure(oldImageUrl).then(() => {
-                            res.status(200).json({ message: 'Success', donationform: donation });
-                        }).catch((err: mongoose.Error) => {
-                            res.status(400).json({ message: err.message, donationform: donation });
-                        });
-                    } else {
-                        res.status(200).json({ message: 'Success', donationform: donation });
-                    }
-                }).catch((err: mongoose.Error) => {
-                    res.status(500).json({ message: err.message, donationform: donation });
-                });
-                return;
             }
         }
-    })
-        .catch((err) => {
-            return res.status(500).json({ message: err.message });
+
+        // Deletes old image from Azure if a new image is updated for donation
+        if (oldImageUrl && newImageUrl) {
+            const deleteResponse = await deleteImageAzure(oldImageUrl);
+        }
+
+        // Saves updated donation to User donation array
+        const updatedDonation:UserDocument = await currentUser.save();
+        if (!updatedDonation) {
+            throw new Error('Failed to update donation for specified user');
+        }
+
+        // Update specified donation in Ongoing Donation Queue
+        delete newDonationForm.imageLink;
+        const updatedOngoing = await OngoingDonation.findByIdAndUpdate(formid, newDonationForm, { new: true }).session(session);
+        if (!updatedOngoing) {
+            throw new Error('Failed to update Ongoing Donation for specified user.');
+        }
+
+        // Commit transaction once updated in both collections
+        await session.commitTransaction();
+        res.status(200).json({
+            message: 'Success',
+            donationform: updatedDonation.donations[updatedDonation.donations.length - 1]
         });
+    } catch (err) {
+        await session.abortTransaction();
+        res.status(500).json({
+            message: err.message
+        });
+    } finally {
+        session.endSession();
+    }
 };
 
 /**
