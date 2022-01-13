@@ -1,9 +1,10 @@
-import { Error } from 'mongoose';
-
+import mongoose from 'mongoose';
 import { Response, Request } from 'express';
+import { UploadedFile } from 'express-fileupload';
+import { url } from 'inspector';
 import { User, UserDocument } from '../models/User/index';
-
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
+import { OngoingDonation } from '../models/User/DonationForms';
 import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
 
 /**
@@ -38,7 +39,7 @@ export const getDonationForms = (req: Request, res: Response) => {
                 res.status(400).json({ message: `Could not find donations form ${formid} for user ${userid}`, donationforms: [] });
             }
         })
-        .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
+        .catch((error: mongoose.Error) => res.status(400).json({ message: error.message, donationforms: [] }));
 };
 
 /**
@@ -66,14 +67,14 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
             }
             res.status(200).json({ message: 'Success', donationforms: donations });
         })
-        .catch((error: Error) => res.status(400).json({ message: error.message, donationforms: [] }));
+        .catch((error: mongoose.Error) => res.status(400).json({ message: error.message, donationforms: [] }));
 };
 
 /**
  * Posts Donation Form to Users Donation Forms
  * @route POST /api/donationform?id={userid}
  */
-export const postDonationForm = (req: Request, res: Response) => {
+export const postDonationForm = async (req: Request, res: Response) => {
     const userid = req.query.id || null;
 
     // We need a userid because all donation forms are stored under the user documents
@@ -88,54 +89,79 @@ export const postDonationForm = (req: Request, res: Response) => {
         return;
     }
 
-    // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
-    Promise.all(
-        [
-            // If we have a file to upload call uploadImageAzure otherwise just use the default image url
-            (req.files !== null && req.files !== undefined && req.files.image !== undefined)
-                // @ts-ignore Typescript worries req.files could be an UploadedFile, but it is always an object of UploadedFiles
-                ? uploadImageAzure(req.files.image) : '',
-            User.findById(userid)
-        ]
-    ).then((values) => {
-        try {
-            // Parse the 'data' from the request body to get the new donation form
-            const newDonationForm = JSON.parse(req.body.data);
+    // Set up transaction session
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-            let currentUser:UserDocument;
-            [newDonationForm.imageLink, currentUser] = values; // values is [imagelink, currentuser]
+    try {
+        // UploadImage and Query User simultaneously by creating a promise out of both asynchronous tasks
+        const [url, currentUser] = await Promise.all(
+            [
+                // If we have a file to upload call uploadImageAzure otherwise just use the default image url
+                (req.files !== null && req.files !== undefined && req.files.image !== undefined
+                    ? uploadImageAzure(req.files.image as UploadedFile) : ''),
+                User.findById(userid)
+            ]
+        );
 
-            currentUser.donations.push(newDonationForm);
-            currentUser.save().then((updatedUser: UserDocument) => {
-                // Send a push notification to all the admins notifying them of the new donation
-                User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
-                    if (err) {
-                        console.log(err);
-                        res.status(500).json({ message: err.message, donationform: {} });
-                        return;
-                    }
-                    let tokens:string[] = [];
-                    // Collect the tokens of all the admins
-                    for (const user of users) {
-                        tokens = tokens.concat(user.pushTokens);
-                    }
-
-                    sendBatchNotification(`New Donation from ${currentUser.businessName}`,
-                        req.body.description ?? 'Check app for details',
-                        tokens);
-                });
-                res.status(200).json({
-                    message: 'Success',
-                    donationform: updatedUser.donations[updatedUser.donations.length - 1]
-                });
-            }).catch((err: Error) => {
-                console.log(err);
-                res.status(500).json({ message: err.message, donationform: {} });
-            });
-        } catch (err) {
-            res.status(400).json({ message: err.message, donationform: {} });
+        if (!currentUser) {
+            throw new Error('User does not exist.');
         }
-    }).catch((error: Error) => res.status(400).json({ message: error.message, donationform: {} }));
+
+        // Processing JSON data payload
+        const newDonationForm = JSON.parse(req.body.data);
+        newDonationForm.imageLink = url;
+
+        // Adding new donation to specified user
+        currentUser.donations.push(newDonationForm);
+        const savedDonation = await currentUser.save()
+            .then((updatedUser: UserDocument) => {
+                const donationId = updatedUser.donations[updatedUser.donations.length - 1]._id;
+                newDonationForm._id = donationId;
+                return updatedUser;
+            });
+
+        if (!savedDonation) {
+            throw new Error('Failed to Save Donation');
+        }
+
+        // Send a push notification to all the admins notifying them of the new donation
+        User.find({ isAdmin: true }).select('pushTokens').exec((err, users) => {
+            if (err) {
+                throw err;
+            }
+            let tokens:string[] = [];
+            // Collect the tokens of all the admins
+            for (const user of users) {
+                tokens = tokens.concat(user.pushTokens);
+            }
+            console.log('sending notification');
+            sendBatchNotification(`New Donation from ${currentUser.businessName}`,
+                req.body.description ?? 'Check app for details',
+                tokens);
+        });
+
+        // Adds donation to OngoingDonations queue
+        const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
+
+        if (!savedOngoing) {
+            throw new Error('Failed to Save Donation');
+        }
+
+        // Commit transaction and sending success response if saved into DB
+        await session.commitTransaction();
+        res.status(200).json({
+            message: 'Success',
+            donationform: savedDonation.donations[savedDonation.donations.length - 1]
+        });
+    } catch (err) {
+        await session.abortTransaction();
+        res.status(500).json({
+            message: err.message
+        });
+    } finally {
+        session.endSession();
+    }
 };
 
 /**
@@ -161,6 +187,10 @@ export const putDonationForm = (req: Request, res: Response) => {
     // Find user by the specified userid
     User.findById(userid).then(async (user) => {
         // We need to loop through and find the donation form with the matching id
+        if (user === null) {
+            throw new Error('User Does Not Exist');
+        }
+
         for (const donation of user.donations) {
             if (donation._id.toString() === formid) {
                 // req.body.data should hold the donationform information to save to the user if it is being updated
@@ -205,19 +235,22 @@ export const putDonationForm = (req: Request, res: Response) => {
                     if (oldImageUrl !== null) {
                         deleteImageAzure(oldImageUrl).then(() => {
                             res.status(200).json({ message: 'Success', donationform: donation });
-                        }).catch((err:Error) => {
+                        }).catch((err: mongoose.Error) => {
                             res.status(400).json({ message: err.message, donationform: donation });
                         });
                     } else {
                         res.status(200).json({ message: 'Success', donationform: donation });
                     }
-                }).catch((err:Error) => {
+                }).catch((err: mongoose.Error) => {
                     res.status(500).json({ message: err.message, donationform: donation });
                 });
                 return;
             }
         }
-    });
+    })
+        .catch((err) => {
+            return res.status(500).json({ message: err.message });
+        });
 };
 
 /**
@@ -250,10 +283,10 @@ export const deleteDonationForm = (req: Request, res: Response) => {
                 deleteImageAzure(donation.imageLink).then(() => {
                     result.save().then(() => {
                         res.status(200).json({ message: 'Success', donationform: donation });
-                    }).catch((err:Error) => {
+                    }).catch((err: mongoose.Error) => {
                         res.status(400).json({ message: err.message, donationform: donation });
                     });
-                }).catch((err:Error) => {
+                }).catch((err: mongoose.Error) => {
                     res.status(400).json({ message: err.message, donationform: donation });
                 });
                 return;
@@ -261,7 +294,7 @@ export const deleteDonationForm = (req: Request, res: Response) => {
         }
         // If we looped through all of the users donations and couldn't find a matching donation form return error
         res.status(400).json({ message: `Could not find donation form with id ${formid} for user ${userid}`, donationform: {} });
-    }).catch((err: Error) => {
+    }).catch((err: mongoose.Error) => {
         res.status(400).json({ message: err.message, donationform: {} });
     });
 };
