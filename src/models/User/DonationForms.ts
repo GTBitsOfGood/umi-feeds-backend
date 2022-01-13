@@ -32,10 +32,10 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     ongoing: { type: Boolean, required: true },
     status: {
         type: String,
-        enum: ['pending pickup', 'picked up', 'dropped off'],
+        enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
     },
     imageLink: { type: String, required: false },
-    dishes: { type: [DonationDishesSchema], required: true },
+    donationDishes: { type: [DonationDishesSchema], required: true },
     pickupAddress: { type: AddressSchema, required: true },
     pickupInstructions: { type: String, default: 'None' },
     pickupStartTime: { type: Date, required: true },
@@ -61,11 +61,12 @@ export type OngoingDonationDocument = mongoose.Document & {
   userID: string;
 }
 
-export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
+const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
+    userID: { type: String, required: true },
     ongoing: { type: Boolean, required: true, default: true },
     status: {
         type: String,
-        enum: ['pending pickup', 'picked up', 'dropped off'],
+        enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
     },
     dishes: { type: [DonationDishesSchema], required: true },
     pickupAddress: { type: AddressSchema, required: true },
@@ -75,7 +76,6 @@ export const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocumen
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, required: true },
     volunteerLockTime: { type: Date, required: true },
-    userID: { type: String, required: true }
 }, { timestamps: true });
 
 export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);

@@ -1,9 +1,7 @@
 import mongoose from 'mongoose';
 import { Response, Request } from 'express';
-import { UploadedFile } from 'express-fileupload';
 import { User, UserDocument } from '../models/User/index';
 import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
-import { uploadImageAzure, deleteImageAzure } from '../util/azure-image';
 
 /**
  * Gets all ongoing donations
@@ -50,11 +48,6 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
         // Get current User to access their donations array
         const currentUser:UserDocument = await User.findById(userId).session(session);
 
-        // Check if specified donation and specified User exists
-        if (!ongoingDonation) {
-            throw new Error('Specified donation does not exist.');
-        }
-
         if (!currentUser) {
             throw new Error('Specified user does not exist.');
         }
@@ -73,14 +66,20 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
             }
         }
 
+        const [updatedDonation, updatedOngoing] = await Promise.all(
+            [
+                currentUser.save(),
+                OngoingDonation.findByIdAndUpdate(donationId, newDonationForm, { new: true }).session(session),
+            ]
+        );
         // Saves updated donation to User donation array
-        const updatedDonation:UserDocument = await currentUser.save();
+        // const updatedDonation:UserDocument = await currentUser.save();
         if (!updatedDonation) {
             throw new Error('Failed to update donation for specified user');
         }
 
         // Update specified donation in Ongoing Donation Queue
-        const updatedOngoing = await OngoingDonation.findByIdAndUpdate(donationId, newDonationForm, { new: true }).session(session);
+        // const updatedOngoing = await OngoingDonation.findByIdAndUpdate(donationId, newDonationForm, { new: true }).session(session);
         if (!updatedOngoing) {
             throw new Error('Failed to update Ongoing Donation for specified user.');
         }

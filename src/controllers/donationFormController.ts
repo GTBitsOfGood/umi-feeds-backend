@@ -144,6 +144,7 @@ export const postDonationForm = async (req: Request, res: Response) => {
 
         // Adds donation to OngoingDonations queue
         newDonationForm.userID = userid;
+
         const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
 
         if (!savedOngoing) {
@@ -228,7 +229,7 @@ export const putDonationForm = async (req: Request, res: Response) => {
         }
 
         // Update specified donation as a part of User's donations array
-        let oldImageUrl:string = '';
+        let oldImageUrl = '';
         for (const donation of currentUser.donations) {
             if (donation._id.toString() === formid) {
                 oldImageUrl = donation.imageLink;
