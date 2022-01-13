@@ -6,8 +6,6 @@ import { User, UserDocument } from '../models/User/index';
 import { deleteImageAzure, uploadImageAzure } from '../util/azure-image';
 import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
 import { sendBatchNotification, sendPushNotifications } from '../util/notifications';
-import { userDonations } from './oldControllers/donorController';
-
 /**
  * Gets Donation Forms by User
  * @route GET /api/donationform?id={userid}&donationFormID={formid}
