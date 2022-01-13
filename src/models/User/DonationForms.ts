@@ -49,7 +49,8 @@ export type OngoingDonationDocument = mongoose.Document & {
   _id?: string; // the unqiue id assigned to a donation form. Let Mongo create this when you insert a document without any _id attribute
   ongoing: boolean;
   status: string;
-  dishes: DonationDishes[];
+  imageLink: string;
+  donationDishes: DonationDishes[];
   pickupAddress: Address;
   pickupInstructions: string;
   pickupStartTime: Date;
@@ -68,9 +69,10 @@ const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
         type: String,
         enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
     },
-    dishes: { type: [DonationDishesSchema], required: true },
+    imageLink: { type: String, required: false },
+    donationDishes: { type: [DonationDishesSchema], required: true },
     pickupAddress: { type: AddressSchema, required: true },
-    pickupInstructions: { type: String, required: true },
+    pickupInstructions: { type: String, default: 'None' },
     pickupStartTime: { type: Date, required: true },
     pickupEndTime: { type: Date, required: true },
     lockedByVolunteer: { type: Boolean, required: true },
