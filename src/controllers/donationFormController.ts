@@ -187,6 +187,10 @@ export const putDonationForm = (req: Request, res: Response) => {
     // Find user by the specified userid
     User.findById(userid).then(async (user) => {
         // We need to loop through and find the donation form with the matching id
+        if (user === null) {
+            throw new Error('User Does Not Exist');
+        }
+
         for (const donation of user.donations) {
             if (donation._id.toString() === formid) {
                 // req.body.data should hold the donationform information to save to the user if it is being updated
@@ -243,7 +247,10 @@ export const putDonationForm = (req: Request, res: Response) => {
                 return;
             }
         }
-    });
+    })
+        .catch((err) => {
+            return res.status(500).json({ message: err.message });
+        });
 };
 
 /**
