@@ -41,8 +41,9 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     pickupStartTime: { type: Date, required: true },
     pickupEndTime: { type: Date, required: true },
     lockedByVolunteer: { type: Boolean, required: true },
-    confirmPickUpTime: { type: Date, required: true },
-    volunteerLockTime: { type: Date, required: true },
+    confirmPickUpTime: { type: Date, default: undefined },
+    volunteerLockTime: { type: Date, default: undefined },
+    confirmDropOffTime: { type: Date, default: undefined }
 }, { timestamps: true });
 
 export type OngoingDonationDocument = mongoose.Document & {
@@ -76,8 +77,9 @@ const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
     pickupStartTime: { type: Date, required: true },
     pickupEndTime: { type: Date, required: true },
     lockedByVolunteer: { type: Boolean, required: true },
-    confirmPickUpTime: { type: Date, required: true },
-    volunteerLockTime: { type: Date, required: true },
+    confirmPickUpTime: { type: Date, default: undefined },
+    volunteerLockTime: { type: Date, default: undefined },
+    confirmDropOffTime: { type: Date, default: undefined }
 }, { timestamps: true });
 
 export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);
