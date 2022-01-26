@@ -28,11 +28,12 @@ export const DonationDishesSchema = new mongoose.Schema<DonationDishes>({
     quantity: { type: Number, required: true },
 });
 
+// Status will be a ENUM once the status are actually set
 export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     ongoing: { type: Boolean, required: true },
     status: {
         type: String,
-        enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
+        required: true
     },
     imageLink: { type: String, required: false },
     donationDishes: { type: [DonationDishesSchema], required: true },
@@ -48,6 +49,7 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
 
 export type OngoingDonationDocument = mongoose.Document & {
   _id?: string; // the unqiue id assigned to a donation form. Let Mongo create this when you insert a document without any _id attribute
+  businessName: string;
   ongoing: boolean;
   status: string;
   imageLink: string;
@@ -63,12 +65,14 @@ export type OngoingDonationDocument = mongoose.Document & {
   userID: string;
 }
 
+// Status will be a ENUM once the status are actually set
 const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
     userID: { type: String, required: true },
+    businessName: { type: String, required: true },
     ongoing: { type: Boolean, required: true, default: true },
     status: {
         type: String,
-        enum: ['pending pickup', 'picked up', 'dropped off', 'Rejected'],
+        required: true,
     },
     imageLink: { type: String, required: false },
     donationDishes: { type: [DonationDishesSchema], required: true },

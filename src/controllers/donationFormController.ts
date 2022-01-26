@@ -157,6 +157,7 @@ export const postDonationForm = async (req: Request, res: Response) => {
         });
     } catch (err) {
         await session.abortTransaction();
+        console.log(err);
         res.status(500).json({
             message: err.message
         });
