@@ -1,13 +1,13 @@
 import { Response, Request } from 'express';
 import { User } from '../models/User/index';
-import { OngoingDonationDocument } from '../models/User/DonationForms';
+import { DonationForm } from '../models/User/DonationForms';
 /* eslint quote-props: ["error", "consistent"] */
 
 /**
  * Gets Donation Forms within the past 30 days
  * @route GET /api/search/donations/last30days
  *
- * */
+ */
 export const last30DaysDonationsHistory = (req: Request, res: Response) => {
     const numDays = 30;
     return User.aggregate([
@@ -42,8 +42,8 @@ export const last30DaysDonationsHistory = (req: Request, res: Response) => {
         }
     ]).then((result) => {
         if (result) {
-            // Format Mongoose aggregation output to array of DonationDocuments
-            const formattedResult:OngoingDonationDocument[] = [];
+            // Format Mongoose aggregation output to array of DonationForms
+            const formattedResult:DonationForm[] = [];
             for (let i = 0; i < result.length; i++) {
                 formattedResult.push(result[i].donations);
             }
@@ -56,9 +56,9 @@ export const last30DaysDonationsHistory = (req: Request, res: Response) => {
     });
 };
 
-/*
+/**
 * Gets past Donations forms in the specified month
-* GET /api/search/donations/:month/:year
+* @route GET /api/search/donations/:month/:year
 *
 */
 export const monthDonationsHistory = (req: Request, res: Response) => {
@@ -107,8 +107,8 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
         }
     ]).then((result) => {
         if (result) {
-            // Format Mongoose aggregation output to array of DonationDocuments
-            const formattedResult:OngoingDonationDocument[] = [];
+            // Format Mongoose aggregation output to array of DonationForms
+            const formattedResult:DonationForm[] = [];
             for (let i = 0; i < result.length; i++) {
                 formattedResult.push(result[i].donations);
             }
