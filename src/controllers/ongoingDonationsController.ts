@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Response, Request } from 'express';
 import { User, UserDocument } from '../models/User/index';
 import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
+import { sendBatchNotification } from '../util/notifications';
 
 /**
  * Gets all ongoing donations
@@ -90,6 +91,18 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
             message: 'Success',
             donationform: updatedOngoing
         });
+
+        // Push notification to user if status of the ongoing donation has changed
+        try {
+            if (ongoingDonation.status !== updatedOngoing.status) {
+                sendBatchNotification('Donation Update',
+                    `Your donation has been updated to ${updatedOngoing.status}. Please refresh!`,
+                    currentUser.pushTokens);
+            }
+        } catch (err) {
+            // Okay if notification fails but log if it does
+            console.error(`Notification failed to send: ${err}`);
+        }
     } catch (err) {
         await session.abortTransaction();
         res.status(500).json({
