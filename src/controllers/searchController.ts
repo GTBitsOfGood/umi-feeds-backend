@@ -49,7 +49,7 @@ export const last30DaysDonationsHistory = (req: Request, res: Response) => {
             }
             res.status(200).json({ 'donations': formattedResult });
         } else {
-            res.status(400).json({ 'donations': [] });
+            res.status(200).json({ 'donations': [] });
         }
     }).catch((error: Error) => {
         res.status(400).json({ message: error.message });
@@ -114,7 +114,7 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
             }
             res.status(200).json({ 'donations': formattedResult });
         } else {
-            res.status(400).json({ 'donations': [] });
+            res.status(200).json({ 'donations': [] });
         }
     }).catch((error: Error) => {
         res.status(400).json({ message: error.message });
