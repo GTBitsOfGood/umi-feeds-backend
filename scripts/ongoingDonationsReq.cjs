@@ -4,7 +4,7 @@ const parallel = require('run-parallel');
 const updateDonation = async (number) => {
     const t0 = Date.now();
     const DONATION_ID = '61f0b235b6270f1500736789';
-    const BASE_PATH = 'https://umi-feeds-backend.herokuapp.com/'; // http://localhost:3000/
+    const BASE_PATH = 'http://localhost:3000/';
     const res = await fetch(`${BASE_PATH}api/ongoingdonations/${DONATION_ID}`, {
         method: 'put',
         body: JSON.stringify({ json: JSON.stringify({
