@@ -3,16 +3,123 @@ import { Response, Request } from 'express';
 import { User, UserDocument } from '../models/User/index';
 import { OngoingDonation, OngoingDonationDocument } from '../models/User/DonationForms';
 import { sendBatchNotification } from '../util/notifications';
-
+/* eslint quote-props: ["error", "consistent"] */
 /**
  * Gets all ongoing donations
  * @route GET /api/ongoingdonations
  *
  */
 export const getOngoingDonations = (req: Request, res: Response) => {
-    OngoingDonation.find()
-        .then((results : OngoingDonationDocument[]) => res.status(200).json({ 'Ongoing Donations': results }))
-        .catch((error: Error) => res.status(500).json({ message: error.message }));
+    return OngoingDonation.aggregate([
+        {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'userID',
+                'foreignField': '_id',
+                'as': 'joinedUser'
+            }
+        }, {
+            '$addFields': {
+                'dishes': '$joinedUser.dishes',
+                'name': '$joinedUser.name',
+                'phoneNumber': '$joinedUser.phoneNumber'
+            }
+        }, {
+            '$unwind': {
+                'path': '$dishes',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$unwind': {
+                'path': '$name',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$unwind': {
+                'path': '$phoneNumber',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$project': {
+                'joinedUser': 0
+            }
+        }, {
+            '$unwind': {
+                'path': '$donationDishes',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$unwind': {
+                'path': '$dishes',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$match': {
+                '$expr': {
+                    '$eq': [
+                        '$donationDishes.dishID', '$dishes._id'
+                    ]
+                }
+            }
+        }, {
+            '$addFields': {
+                'mergedDishes': {
+                    '$mergeObjects': [
+                        '$dishes', '$donationDishes'
+                    ]
+                }
+            }
+        }, {
+            '$project': {
+                'donationDishes': 0,
+                'dishes': 0
+            }
+        }, {
+            '$group': {
+                '_id': '$_id',
+                'donationDishes': {
+                    '$push': '$mergedDishes'
+                },
+                'name': {
+                    '$first': '$name'
+                },
+                'phoneNumber': {
+                    '$first': '$phoneNumber'
+                },
+                'pickupInstructions': {
+                    '$first': '$pickupInstructions'
+                },
+                'businessName': {
+                    '$first': '$businessName'
+                },
+                'status': {
+                    '$first': '$status'
+                },
+                'ongoing': {
+                    '$first': '$ongoing'
+                },
+                'imageLink': {
+                    '$first': '$imageLink'
+                },
+                'pickupAddress': {
+                    '$first': '$pickupAddress'
+                },
+                'pickupStartTime': {
+                    '$first': '$pickupStartTime'
+                },
+                'pickupEndTime': {
+                    '$first': '$pickupEndTime'
+                },
+                'userID': {
+                    '$first': '$userID'
+                }
+            }
+        }
+    ]).then((result) => {
+        res.status(200).json({ 'Ongoing Donations': result });
+    }).catch((error: Error) => {
+        res.status(400).json({ message: error.message });
+    });
 };
 
 /**
@@ -55,6 +162,11 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
 
         // Processing JSON data payload
         const newDonationForm = JSON.parse(req.body.json);
+
+        // Modify dishIDs to ObjectID
+        for (let i = 0; i < newDonationForm.donationDishes.length; i++) {
+            newDonationForm.donationDishes[i].dishID = mongoose.Types.ObjectId(newDonationForm.donationDishes[i].dishID);
+        }
 
         // Update specified donation as a part of User's donations array
         for (const donation of currentUser.donations) {
@@ -145,7 +257,7 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
         }
 
         // Update status and ongoing of specified donation in User's donation array
-        const updatedDonationResponse:mongoose.UpdateWriteOpResult = await User.updateOne({ _id: userId, 'donations._id': donationId }, { $set: { 'donations.$.status': 'dropped off', 'donations.$.ongoing': false } }).session(session);
+        const updatedDonationResponse:mongoose.UpdateWriteOpResult = await User.updateOne({ '_id': userId, 'donations._id': donationId }, { $set: { 'donations.$.status': 'dropped off', 'donations.$.ongoing': false } }).session(session);
 
         if (updatedDonationResponse.nModified !== 1) {
             throw new Error('Could not update donation status for User.');

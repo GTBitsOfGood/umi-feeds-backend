@@ -74,7 +74,7 @@ export const getOngoingDonationForms = (req: Request, res: Response) => {
  * @route POST /api/donationform?id={userid}
  */
 export const postDonationForm = async (req: Request, res: Response) => {
-    const userid = req.query.id || null;
+    const userid = req.query.id as string || null;
 
     // We need a userid because all donation forms are stored under the user documents
     if (userid == null) {
@@ -111,6 +111,11 @@ export const postDonationForm = async (req: Request, res: Response) => {
         const newDonationForm = JSON.parse(req.body.data);
         newDonationForm.imageLink = url;
 
+        // Modify Dish IDs to ObjectID
+        for (let i = 0; i < newDonationForm.donationDishes.length; i++) {
+            newDonationForm.donationDishes[i].dishID = mongoose.Types.ObjectId(newDonationForm.donationDishes[i].dishID);
+        }
+
         // Adding new donation to specified user
         currentUser.donations.push(newDonationForm);
         const savedDonation = await currentUser.save()
@@ -141,7 +146,7 @@ export const postDonationForm = async (req: Request, res: Response) => {
         });
 
         // Adds donation to OngoingDonations queue
-        newDonationForm.userID = userid;
+        newDonationForm.userID = mongoose.Types.ObjectId(userid);
 
         const savedOngoing = await OngoingDonation.create([newDonationForm], { session });
 
@@ -225,6 +230,11 @@ export const putDonationForm = async (req: Request, res: Response) => {
         const newDonationForm = JSON.parse(req.body.data);
         if (newImageUrl) {
             newDonationForm.imageLink = newImageUrl;
+        }
+
+        // Modify dishIDs to ObjectID
+        for (let i = 0; i < newDonationForm.donationDishes.length; i++) {
+            newDonationForm.donationDishes[i].dishID = mongoose.Types.ObjectId(newDonationForm.donationDishes[i].dishID);
         }
 
         // Update specified donation as a part of User's donations array

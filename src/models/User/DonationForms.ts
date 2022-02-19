@@ -24,7 +24,7 @@ export type DonationForm = {
 }
 
 export const DonationDishesSchema = new mongoose.Schema<DonationDishes>({
-    dishID: { type: String, required: true },
+    dishID: { type: mongoose.Schema.Types.ObjectId, required: true },
     quantity: { type: Number, required: true },
 });
 
@@ -67,7 +67,7 @@ export type OngoingDonationDocument = mongoose.Document & {
 
 // Status will be a ENUM once the status are actually set
 const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
-    userID: { type: String, required: true },
+    userID: { type: mongoose.Schema.Types.ObjectId, required: true },
     businessName: { type: String, required: true },
     ongoing: { type: Boolean, required: true, default: true },
     status: {
