@@ -6,13 +6,16 @@ import { sendBatchNotification } from '../util/notifications';
 /* eslint quote-props: ["error", "consistent"] */
 /**
  * Gets all ongoing donations
+ * Uses MongoDB aggregations and lookup to get detailed dishes information
+ * based on User's dishes and ongoingDonation's donationDishes
+ *
  * @route GET /api/ongoingdonations
  *
  */
 export const getOngoingDonations = (req: Request, res: Response) => {
     return OngoingDonation.aggregate([
         {
-            // Perforrm Join on matching user id
+            // Perform join on matching user id
             '$lookup': {
                 'from': 'users',
                 'localField': 'userID',
@@ -47,7 +50,7 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 'joinedUser': 0
             }
         }, {
-            // Unwind donationDishess and dishes
+            // Unwind donationDishes and dishes
             '$unwind': {
                 'path': '$donationDishes',
                 'preserveNullAndEmptyArrays': false
