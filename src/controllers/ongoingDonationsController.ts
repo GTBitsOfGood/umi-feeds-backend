@@ -12,6 +12,7 @@ import { sendBatchNotification } from '../util/notifications';
 export const getOngoingDonations = (req: Request, res: Response) => {
     return OngoingDonation.aggregate([
         {
+            // Perforrm Join on matching user id
             '$lookup': {
                 'from': 'users',
                 'localField': 'userID',
@@ -19,12 +20,14 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 'as': 'joinedUser'
             }
         }, {
+            // Add new joined fields
             '$addFields': {
                 'dishes': '$joinedUser.dishes',
                 'name': '$joinedUser.name',
                 'phoneNumber': '$joinedUser.phoneNumber'
             }
         }, {
+            // New fields are default arrays so unwinded to objects and values
             '$unwind': {
                 'path': '$dishes',
                 'preserveNullAndEmptyArrays': false
@@ -44,6 +47,7 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 'joinedUser': 0
             }
         }, {
+            // Unwind donationDishess and dishes
             '$unwind': {
                 'path': '$donationDishes',
                 'preserveNullAndEmptyArrays': false
@@ -54,6 +58,7 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 'preserveNullAndEmptyArrays': false
             }
         }, {
+            // Matched donation dishes and User's dishes
             '$match': {
                 '$expr': {
                     '$eq': [
@@ -62,6 +67,7 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 }
             }
         }, {
+            // "Join" dishes
             '$addFields': {
                 'mergedDishes': {
                     '$mergeObjects': [
@@ -75,6 +81,7 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 'dishes': 0
             }
         }, {
+            // Rewind unwindings
             '$group': {
                 '_id': '$_id',
                 'donationDishes': {
@@ -109,6 +116,18 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 },
                 'pickupEndTime': {
                     '$first': '$pickupEndTime'
+                },
+                'confirmPickUpTime': {
+                    '$first': '$confirmPickUpTime'
+                },
+                'confirmDropOffTime': {
+                    '$first': '$confirmDropOffTime'
+                },
+                'volunteerLockTime': {
+                    '$first': '$volunteerLockTime'
+                },
+                'lockedByVolunteer': {
+                    '$first': '$lockedByVolunteer'
                 },
                 'userID': {
                     '$first': '$userID'
