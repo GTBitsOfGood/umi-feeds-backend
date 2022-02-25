@@ -200,17 +200,6 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
             }
         }
 
-        // Update specified donation as a part of User's donations array
-        for (const donation of currentUser.donations) {
-            if (donation._id.toString() === donationId) {
-                for (const [key, value] of Object.entries(newDonationForm)) {
-                    // Replace all of the old values in the donationform
-                    // @ts-ignore Key is always a string, but Typescript finds that confusing
-                    donation[key] = value;
-                }
-            }
-        }
-
         const [updatedDonation, updatedOngoing] = await Promise.all(
             [
                 currentUser.save(),

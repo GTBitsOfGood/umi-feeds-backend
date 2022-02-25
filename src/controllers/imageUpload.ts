@@ -17,7 +17,6 @@ const containerName = 'image-container';
  */
 export const postImage = (req: Request, res: Response) => {
     try {
-        console.log(req.files);
         if (!req.files) {
             res.status(400).send({
                 status: false,
