@@ -177,14 +177,13 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
 
         // Get current User to access their donations array
         const currentUser:UserDocument = await User.findById(userId).session(session);
-        console.log(currentUser);
+
 
         if (!currentUser) {
             throw new Error('Specified user does not exist.');
         }
 
         // Processing JSON data payload
-        console.log(req.body.json);
         const newDonationForm = JSON.parse(req.body.json);
 
         // Modify dishIDs to ObjectID
