@@ -178,6 +178,7 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
         // Get current User to access their donations array
         const currentUser:UserDocument = await User.findById(userId).session(session);
 
+
         if (!currentUser) {
             throw new Error('Specified user does not exist.');
         }
@@ -186,8 +187,10 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
         const newDonationForm = JSON.parse(req.body.json);
 
         // Modify dishIDs to ObjectID
-        for (let i = 0; i < newDonationForm.donationDishes.length; i++) {
-            newDonationForm.donationDishes[i].dishID = mongoose.Types.ObjectId(newDonationForm.donationDishes[i].dishID);
+        if (newDonationForm.donationDishes) {
+            for (let i = 0; i < newDonationForm.donationDishes.length; i++) {
+                newDonationForm.donationDishes[i].dishID = mongoose.Types.ObjectId(newDonationForm.donationDishes[i].dishID);
+            }
         }
 
         // Update specified donation as a part of User's donations array
@@ -238,6 +241,7 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
             console.error(`Notification failed to send: ${err}`);
         }
     } catch (err) {
+        console.log(err);
         await session.abortTransaction();
         res.status(500).json({
             message: err.message
