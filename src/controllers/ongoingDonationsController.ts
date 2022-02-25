@@ -134,10 +134,17 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 },
                 'userID': {
                     '$first': '$userID'
+                },
+                'dropOffAddress': {
+                    '$first': '$dropOffAddress'
+                },
+                'dropOffInstructions': {
+                    '$first': '$dropOffInstructions'
                 }
             }
         }
     ]).then((result) => {
+        console.log(result);
         res.status(200).json({ 'Ongoing Donations': result });
     }).catch((error: Error) => {
         res.status(400).json({ message: error.message });
@@ -178,13 +185,13 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
         // Get current User to access their donations array
         const currentUser:UserDocument = await User.findById(userId).session(session);
 
-
         if (!currentUser) {
             throw new Error('Specified user does not exist.');
         }
 
         // Processing JSON data payload
         const newDonationForm = JSON.parse(req.body.json);
+        console.log(newDonationForm);
 
         // Modify dishIDs to ObjectID
         if (newDonationForm.donationDishes) {
