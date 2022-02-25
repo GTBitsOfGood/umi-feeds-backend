@@ -17,6 +17,8 @@ export type DonationForm = {
   pickupInstructions: string;
   pickupStartTime: Date;
   pickupEndTime: Date;
+  dropOffAddress: Address;
+  dropOffInstructions: string;
   volunteerLockTime: Date; // time when volunteer agrees to pick it up
   lockedByVolunteer: boolean; // whether the donation has been locked by a volunteer
   confirmPickUpTime: Date; // time when donation has been picked up by volunteer
@@ -41,6 +43,8 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     pickupInstructions: { type: String, default: 'None' },
     pickupStartTime: { type: Date, required: true },
     pickupEndTime: { type: Date, required: true },
+    dropOffAddress: { type: AddressSchema, default: undefined },
+    dropOffInstructions: { type: String, default: 'None ' },
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, default: undefined },
     volunteerLockTime: { type: Date, default: undefined },
@@ -58,6 +62,8 @@ export type OngoingDonationDocument = mongoose.Document & {
   pickupInstructions: string;
   pickupStartTime: Date;
   pickupEndTime: Date;
+  dropOffAddress: Address;
+  dropOffInstructions: string;
   volunteerLockTime: Date; // time when volunteer agrees to pick it up
   lockedByVolunteer: boolean; // whether the donation has been locked by a volunteer
   confirmPickUpTime: Date; // time when donation has been picked up by volunteer
@@ -80,6 +86,8 @@ const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
     pickupInstructions: { type: String, default: 'None' },
     pickupStartTime: { type: Date, required: true },
     pickupEndTime: { type: Date, required: true },
+    dropOffAddress: { type: AddressSchema, default: undefined },
+    dropOffInstructions: { type: String, default: 'None ' },
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, default: undefined },
     volunteerLockTime: { type: Date, default: undefined },
