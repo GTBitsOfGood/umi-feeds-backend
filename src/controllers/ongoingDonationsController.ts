@@ -304,9 +304,16 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
         });
     } catch (err) {
         await session.abortTransaction();
-        res.status(500).json({
-            message: err.message
-        });
+        // Handle concurrency error
+        if (String(err.message).substring(0, 77) === 'Plan executor error during findAndModify :: caused by :: WriteConflict error:') {
+            res.status(400).json({
+                message: 'Try Again in a Few Seconds'
+            });
+        } else {
+            res.status(500).json({
+                message: err.message
+            });
+        }
     } finally {
         session.endSession();
     }
