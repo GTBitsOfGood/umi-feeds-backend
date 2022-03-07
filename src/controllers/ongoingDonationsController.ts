@@ -250,9 +250,16 @@ export const updateOngoingDonation = async (req: Request, res: Response) => {
     } catch (err) {
         console.log(err);
         await session.abortTransaction();
-        res.status(500).json({
-            message: err.message
-        });
+        // Handle parallel concurrency errors accordingly
+        if (String(err.message).substring(0, 77) === 'Plan executor error during findAndModify :: caused by :: WriteConflict error:') {
+            res.status(503).json({
+                message: 'Try Again in a Few Seconds'
+            });
+        } else {
+            res.status(500).json({
+                message: err.message
+            });
+        }
     } finally {
         session.endSession();
     }
@@ -304,16 +311,9 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
         });
     } catch (err) {
         await session.abortTransaction();
-        // Handle parallel concurrency errors accordingly
-        if (String(err.message).substring(0, 77) === 'Plan executor error during findAndModify :: caused by :: WriteConflict error:') {
-            res.status(400).json({
-                message: 'Try Again in a Few Seconds'
-            });
-        } else {
-            res.status(500).json({
-                message: err.message
-            });
-        }
+        res.status(500).json({
+            message: err.message
+        });
     } finally {
         session.endSession();
     }
