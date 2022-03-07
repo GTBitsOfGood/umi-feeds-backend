@@ -81,11 +81,11 @@ app.use(fileupload());
 app.post('/upload', imageController.postImage);
 app.post('/testpush', (req, res) => {
     res.send('testing push notification');
-    // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]s
+    // Add your ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx] to the array below to test sending push notifications to yourself. See the frontend console for a line like Expo Push Token : ExponentPushToken[sfdjiodojifsdojisdfjio]
     sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
 });
 
-// Toggles authMiddleware accordingly
+// Toggles authMiddleware accordingly based on the development configurations
 if (BackendConfiguration.development.AuthMiddlewareOn) {
     app.use('/', userJwt, MainRoutes);
 } else {

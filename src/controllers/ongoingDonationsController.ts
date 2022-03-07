@@ -304,7 +304,7 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
         });
     } catch (err) {
         await session.abortTransaction();
-        // Handle concurrency error
+        // Handle parallel concurrency errors accordingly
         if (String(err.message).substring(0, 77) === 'Plan executor error during findAndModify :: caused by :: WriteConflict error:') {
             res.status(400).json({
                 message: 'Try Again in a Few Seconds'
