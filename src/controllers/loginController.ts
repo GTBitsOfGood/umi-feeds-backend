@@ -2,6 +2,9 @@ import { Error } from 'mongoose';
 
 import { Response, Request } from 'express';
 import { User, UserDocument } from '../models/User/index';
+/*
+import bcrypt from 'bcryptjs';
+import Password from '../models/Password' */
 
 /**
  * POST: Gets User Information based on access token
@@ -31,3 +34,44 @@ export const postLoginUser = (req: Request, res: Response) => {
         res.status(200).json({ message: 'success', user });
     });
 };
+
+/*
+// Checks volunteer
+export const checkVolunteer = (req: Request, res: Response) => {
+    const password = req.params.userpasscode;
+    // Check database for password
+    Password.findOne({type: "Volunteer"}).then(result) => {
+        const hashedPassword = result[0].password;
+    }.catch(err: Error) {
+        res.send(400).json({ message: err.message })
+    }
+
+    // Compare password
+    if (!hashedPassword) {
+        res.send(400).json({ message: err.message })
+    }
+    bcrypt.compare(password, hashedPassword).then(isMatch)  => {
+        if (!isMatch) {
+            res.send(400).json({ message: 'match'});
+        } else {
+            res.send(200).json({ message: 'match'});
+        }
+      }).catch(err: Error) {
+        res.send(400).json({ message: err.message })
+      }
+} */
+
+/*
+// Add password to DB
+export const addVolunteerPW = (req: Request, res: Response)  => {
+    var newPassword = new Password({
+        type: "Volunteer"
+      });
+
+      const password = req.params.password;
+      let hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+
+      newPassword.password = hashedPassword;
+      newPassword.save();
+});
+*/
