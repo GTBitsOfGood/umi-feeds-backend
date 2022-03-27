@@ -17,6 +17,7 @@ import * as imageController from './controllers/imageUpload';
 
 // Sub Routers
 import MainRoutes from './routes/index';
+import BackendConfiguration from './config';
 
 const MongoStore = mongo(session);
 
@@ -84,8 +85,12 @@ app.post('/testpush', (req, res) => {
     sendBatchNotification('Umi Feeds (title)', 'this is a test (body)', ['']);
 });
 
-// Work off of this one. the others will get retired soon
-app.use('/', MainRoutes);
+// Toggles authMiddleware accordingly based on the development configurations
+if (BackendConfiguration.development.AuthMiddlewareOn) {
+    app.use('/', userJwt, MainRoutes);
+} else {
+    app.use('/', MainRoutes);
+}
 
 /**
  * To make a request to this, go to https://manage.auth0.com/dashboard/us/bog-dev/apis/602861e9ea4b12003f71d5d8/test
@@ -99,6 +104,7 @@ app.get('/test-auth0-security', checkJwt, (req, res) => {
     // console.log(req);
     res.send('Secured');
 });
+
 app.get('/test-admin-access', userJwt, checkAdmin, (req, res) => {
     res.send('Secured');
 });
