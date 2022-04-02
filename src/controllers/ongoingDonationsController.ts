@@ -299,7 +299,7 @@ export const deleteOngoingDonation = async (req: Request, res: Response) => {
         // Update status and ongoing of specified donation in User's donation array
         const updatedDonationResponse:mongoose.UpdateWriteOpResult = await User.updateOne({
             '_id': userId, 'donations._id': donationId },
-        { $set: { 'donations.$.status': 'Complete', 'donations.$.ongoing': false, 'donation.$.lockedByVolunteer': false } }).session(session);
+        { $set: { 'donations.$.status': 'Complete', 'donations.$.ongoing': false, 'donations.$.confirmDropOffTime': new Date(), 'donations.$.lockedByVolunteer': false } }).session(session);
 
         if (updatedDonationResponse.nModified !== 1) {
             throw new Error('Could not update donation status for User.');
