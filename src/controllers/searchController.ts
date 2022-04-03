@@ -79,6 +79,7 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
             }
         }, {
             // Break down confirmDropOffTime to Month and Year and store for comparison
+            // Pull name, businessName, email, and phoneNumber from user
             '$project': {
                 '_id': 0,
                 'donations': 1,
@@ -87,9 +88,22 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
                 },
                 'month': {
                     '$month': '$donations.confirmDropOffTime'
-                }
+                },
+                'name': '$name',
+                'businessName': '$businessName',
+                'email': '$email',
+                'phoneNumber': '$phoneNumber'
             }
         }, {
+            // Add corresponding info fields to donations
+            '$addFields': {
+                'donations.name': '$name',
+                'donations.businessName': '$businessName',
+                'donations.email': '$email',
+                'donations.phoneNumber': '$phoneNumber'
+            }
+        }, {
+            // Filter for delivered and corresponding month & year donations
             '$match': {
                 'donations.status': 'Delivered'
             }
@@ -99,7 +113,7 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
                 'month': month
             }
         }, {
-            // Remove month and year fields from aggregated documents
+            // Return filtered donations
             '$project': {
                 '_id': 0,
                 'donations': 1
