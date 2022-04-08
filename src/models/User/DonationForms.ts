@@ -48,7 +48,7 @@ export const DonationFormSchema = new mongoose.Schema<DonationForm>({
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, default: undefined },
     volunteerLockTime: { type: Date, default: undefined },
-    confirmDropOffTime: { type: Date, default: undefined }
+    confirmDropOffTime: { type: Date, default: undefined },
 }, { timestamps: true });
 
 export type OngoingDonationDocument = mongoose.Document & {
@@ -69,6 +69,7 @@ export type OngoingDonationDocument = mongoose.Document & {
   confirmPickUpTime: Date; // time when donation has been picked up by volunteer
   confirmDropOffTime: Date; // time when donation has been dropped off by volunteer
   userID: string;
+  volunteerUserID: string;
 }
 
 // Status will be a ENUM once the status are actually set
@@ -91,7 +92,8 @@ const OngoingDonationsSchema = new mongoose.Schema<OngoingDonationDocument>({
     lockedByVolunteer: { type: Boolean, required: true },
     confirmPickUpTime: { type: Date, default: undefined },
     volunteerLockTime: { type: Date, default: undefined },
-    confirmDropOffTime: { type: Date, default: undefined }
+    confirmDropOffTime: { type: Date, default: undefined },
+    volunteerUserID: { type: String, default: undefined }
 }, { timestamps: true });
 
 export const OngoingDonation = mongoose.model<OngoingDonationDocument>('ongoingdonations', OngoingDonationsSchema);

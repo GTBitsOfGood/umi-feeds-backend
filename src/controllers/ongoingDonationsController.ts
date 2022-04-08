@@ -140,11 +140,13 @@ export const getOngoingDonations = (req: Request, res: Response) => {
                 },
                 'dropOffInstructions': {
                     '$first': '$dropOffInstructions'
+                },
+                'volunteerUserID': {
+                    '$first': '$volunteerUserID'
                 }
             }
         }
     ]).then((result) => {
-        console.log(result);
         res.status(200).json({ 'Ongoing Donations': result });
     }).catch((error: Error) => {
         res.status(400).json({ message: error.message });

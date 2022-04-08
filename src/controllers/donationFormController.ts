@@ -228,6 +228,7 @@ export const putDonationForm = async (req: Request, res: Response) => {
 
         // Processing JSON data payload
         const newDonationForm = JSON.parse(req.body.data);
+        console.log(newDonationForm);
         if (newImageUrl) {
             newDonationForm.imageLink = newImageUrl;
         }
