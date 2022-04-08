@@ -122,10 +122,12 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
     ]).then((result) => {
         if (result) {
             // Format Mongoose aggregation output to array of DonationForms
+            console.log(result);
             const formattedResult:DonationForm[] = [];
             for (let i = 0; i < result.length; i++) {
                 formattedResult.push(result[i].donations);
             }
+            console.log(formattedResult);
             res.status(200).json({ 'donations': formattedResult });
         } else {
             res.status(200).json({ 'donations': [] });

@@ -23,6 +23,10 @@ export type DonationForm = {
   lockedByVolunteer: boolean; // whether the donation has been locked by a volunteer
   confirmPickUpTime: Date; // time when donation has been picked up by volunteer
   confirmDropOffTime: Date; // time when donation has been dropped off by volunteer
+  name: string;
+  businessName: string;
+  email: string;
+  phoneNumber: number;
 }
 
 export const DonationDishesSchema = new mongoose.Schema<DonationDishes>({
