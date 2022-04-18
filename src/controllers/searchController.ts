@@ -58,6 +58,7 @@ export const last30DaysDonationsHistory = (req: Request, res: Response) => {
 
 /**
 * Gets past Donations forms in the specified month
+* Attaches Donation with proper name
 * @route GET /api/search/donations/:month/:year
 *
 */

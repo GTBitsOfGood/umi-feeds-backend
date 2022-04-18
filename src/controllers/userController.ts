@@ -99,7 +99,6 @@ export const editPickupAddress = async (req: Request, res: Response) => {
         const updatedUser = await User.findByIdAndUpdate(userId, { pickupAddresses: newPickupAddresses }, { new: true });
         res.status(200).send(updatedUser);
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             message: `Error: ${e.message}`
         });
