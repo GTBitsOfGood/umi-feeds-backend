@@ -78,11 +78,10 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
                 'preserveNullAndEmptyArrays': false
             }
         }, {
-            // Break down confirmDropOffTime to Month and Year and store for comparison
-            // Pull name, businessName, email, and phoneNumber from user
             '$project': {
-                '_id': 0,
+                '_id': 1,
                 'donations': 1,
+                'dishes': '$dishes',
                 'year': {
                     '$year': '$donations.confirmDropOffTime'
                 },
@@ -92,18 +91,41 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
                 'name': '$name',
                 'businessName': '$businessName',
                 'email': '$email',
-                'phoneNumber': '$phoneNumber'
+                'phoneNumber': '$phoneNumber',
+                'donationDishes': '$donations.donationDishes'
             }
         }, {
-            // Add corresponding info fields to donations
+            '$unwind': {
+                'path': '$dishes',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$unwind': {
+                'path': '$donationDishes',
+                'preserveNullAndEmptyArrays': false
+            }
+        }, {
+            '$match': {
+                '$expr': {
+                    '$eq': [
+                        '$donationDishes.dishID', '$dishes._id'
+                    ]
+                }
+            }
+        }, {
             '$addFields': {
-                'donations.name': '$name',
-                'donations.businessName': '$businessName',
-                'donations.email': '$email',
-                'donations.phoneNumber': '$phoneNumber'
+                'mergedDishes': {
+                    '$mergeObjects': [
+                        '$dishes', '$donationDishes'
+                    ]
+                }
             }
         }, {
-            // Filter for delivered and corresponding month & year donations
+            '$project': {
+                'donationDishes': 0,
+                'dishes': 0
+            }
+        }, {
             '$match': {
                 'donations.status': 'Delivered'
             }
@@ -113,21 +135,74 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
                 'month': month
             }
         }, {
-            // Return filtered donations
-            '$project': {
-                '_id': 0,
-                'donations': 1
+            '$group': {
+                '_id': '$_id',
+                'donationDishes': {
+                    '$push': '$mergedDishes'
+                },
+                'name': {
+                    '$first': '$name'
+                },
+                'phoneNumber': {
+                    '$first': '$phoneNumber'
+                },
+                'pickupInstructions': {
+                    '$first': '$donations.pickupInstructions'
+                },
+                'businessName': {
+                    '$first': '$businessName'
+                },
+                'status': {
+                    '$first': '$donations.status'
+                },
+                'ongoing': {
+                    '$first': '$donations.ongoing'
+                },
+                'imageLink': {
+                    '$first': '$donations.imageLink'
+                },
+                'pickupAddress': {
+                    '$first': '$donations.pickupAddress'
+                },
+                'pickupStartTime': {
+                    '$first': '$donations.pickupStartTime'
+                },
+                'pickupEndTime': {
+                    '$first': '$donations.pickupEndTime'
+                },
+                'confirmPickUpTime': {
+                    '$first': '$donations.confirmPickUpTime'
+                },
+                'confirmDropOffTime': {
+                    '$first': '$donations.confirmDropOffTime'
+                },
+                'volunteerLockTime': {
+                    '$first': '$donations.volunteerLockTime'
+                },
+                'lockedByVolunteer': {
+                    '$first': '$donations.lockedByVolunteer'
+                },
+                'userID': {
+                    '$first': '$donations.userID'
+                },
+                'dropOffAddress': {
+                    '$first': '$donations.dropOffAddress'
+                },
+                'dropOffInstructions': {
+                    '$first': '$donations.dropOffInstructions'
+                },
+                'volunteerUserID': {
+                    '$first': '$donations.volunteerUserID'
+                }
             }
         }
     ]).then((result) => {
         if (result) {
             // Format Mongoose aggregation output to array of DonationForms
-            console.log(result);
             const formattedResult:DonationForm[] = [];
             for (let i = 0; i < result.length; i++) {
-                formattedResult.push(result[i].donations);
+                formattedResult.push(result[i]);
             }
-            console.log(formattedResult);
             res.status(200).json({ 'donations': formattedResult });
         } else {
             res.status(200).json({ 'donations': [] });
