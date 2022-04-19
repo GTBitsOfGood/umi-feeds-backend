@@ -199,6 +199,7 @@ export const monthDonationsHistory = (req: Request, res: Response) => {
         }
     ]).then((result) => {
         if (result) {
+            console.log(result);
             // Format Mongoose aggregation output to array of DonationForms
             const formattedResult:DonationForm[] = [];
             for (let i = 0; i < result.length; i++) {
