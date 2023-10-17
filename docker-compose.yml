@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  umi-feeds-backend:
+    build: .
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - dist:/app/dist
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NODE_COMMAND=${NODE_COMMAND:-dev}
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=umi-feeds
+
+volumes:
+  node_modules:
+  dist:
+  mongo_data:

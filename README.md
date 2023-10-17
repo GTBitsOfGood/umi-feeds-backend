@@ -10,6 +10,22 @@ Backend server for the [Umi Feeds app](https://github.com/GTBitsOfGood/umi-feeds
 - Navigate to this project in the terminal and run `npm install`.
 - On Mac or Linux, run `npm run secrets` to download development secrets from Bitwarden and save them to the `.env` file locally. Contact a leadership member for the Bitwarden password.
   - **Note**: If you are using the Windows command prompt, enter `npm run secrets:login` (logging in only needs to be done once) and then `npm run secrets:sync`. You may have to enter the Bitwarden password multiple times. You should re-run this whenever the secrets in Bitwarden changes.
+
+## Running with Docker
+
+MacOS: [Docker Desktop for MacOS](https://docs.docker.com/desktop/install/mac-install/)
+
+Windows: [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+
+Linux: [Docker Desktop for Linux](https://docs.docker.com/desktop/install/linux-install/)
+
+- Before you can run the dev version, you have to build the project once with `NODE_COMMAND=build docker-compose up --build` 
+- Run the dev version of this project by entering `docker-compose up --build`.
+- By default, Express will use our cloud instance of MongoDB for our database. If you want to run it inside of Docker instead, replace the `MONGODB_URI` environment variable in your local `.env` file with `MONGODB_URI=mongodb://mongo:27017/umi-feeds`. 
+- Any custom node script can be run by changing the NODE_COMMAND environment variable before running docker-compose. For example, `NODE_COMMAND=lint docker-compose up --build`
+
+## Running without Docker
+- Before you can run the dev version, you have to build the project once with `npm run build`
 - Run the dev version of this project by entering `npm run dev`.
 - By default, the Express server will use the cloud MongoDB server on MongoDB Atlas as the database. If you want to use a local MongoDB instance hosted by your computer (which you don't have to), install MongoDB Community Server, and then start your local MongoDB server by running `mongod` (this command will work if you created aliases as recommended in [this](https://zellwk.com/blog/install-mongodb/) article). Edit your local .env file (not on Bitwarden) to use your local MongoDB database URI.
 
