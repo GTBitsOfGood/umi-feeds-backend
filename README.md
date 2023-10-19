@@ -19,6 +19,12 @@ Windows: [Docker Desktop for Windows](https://docs.docker.com/desktop/install/wi
 
 Linux: [Docker Desktop for Linux](https://docs.docker.com/desktop/install/linux-install/)
 
+- Install Docker
+-  Obtain the Bitwarden password from your EM. Create a `bitwarden.env` file and fill it in with the following contents:
+   ```
+   BW_PASSWORD=<your bitwarden password>
+   ```
+   This only needs to be done on your first run. After that, you should delete the file from your repository to avoid pushing it to Github.
 - Before you can run the dev version, you have to build the project once with `NODE_COMMAND=build docker-compose up --build` 
 - Run the dev version of this project by entering `docker-compose up --build`.
 - By default, Express will use our cloud instance of MongoDB for our database. If you want to run it inside of Docker instead, replace the `MONGODB_URI` environment variable in your local `.env` file with `MONGODB_URI=mongodb://mongo:27017/umi-feeds`. 

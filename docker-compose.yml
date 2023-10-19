@@ -13,9 +13,10 @@ services:
       - NODE_ENV=development
       - NODE_COMMAND=${NODE_COMMAND:-dev}
     env_file:
-      - .env
+      - bitwarden.env
     depends_on:
       - mongo
+    entrypoint: ./entrypoint.sh
 
   mongo:
     image: mongo:latest
